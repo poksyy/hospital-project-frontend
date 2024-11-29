@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.hospital
 
 import android.os.Bundle
 import android.widget.Toast
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.hospital.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
