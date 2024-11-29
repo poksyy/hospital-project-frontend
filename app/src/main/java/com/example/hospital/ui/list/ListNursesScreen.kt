@@ -15,7 +15,9 @@ fun ListScreen(
     modifier: Modifier = Modifier,
     names: List<String> = listOf("Pau", "Dylan", "Cristian", "Noemi", "Dafne", "Alex", "Jose")
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
         Text(
             text = "Enfermeros Registrados",
             style = MaterialTheme.typography.titleLarge,

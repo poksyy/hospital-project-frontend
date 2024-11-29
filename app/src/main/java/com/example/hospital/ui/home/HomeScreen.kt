@@ -39,10 +39,12 @@ fun MainScreen() {
             // Display the ListScreen component.
             ListScreen()
         }
+
         showSearchScreen -> {
             // Display the SearchScreen component.
             SearchScreen()
         }
+
         showLoginScreen -> {
             // Display the LoginScreen component with a callback for login results.
             LoginScreen(onLoginResult = { isSuccess ->
@@ -53,6 +55,7 @@ fun MainScreen() {
                 }
             })
         }
+
         else -> {
             // Default: Display the landing page with buttons for navigation.
             Column(

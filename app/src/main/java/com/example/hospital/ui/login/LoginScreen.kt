@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 
 @Composable
@@ -25,8 +26,7 @@ fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+            .padding(16.dp), verticalArrangement = Arrangement.Center
     ) {
         // Title with image
         Row(
@@ -84,8 +84,7 @@ fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
                 .fillMaxWidth()
                 .padding(8.dp),
             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = Color.Red,
-                contentColor = Color.White
+                containerColor = Color.Red, contentColor = Color.White
             )
         ) {
             Text("Log In")
