@@ -19,7 +19,7 @@ fun ListScreen(
         .fillMaxSize()
         .padding(16.dp)) {
         Text(
-            text = "Enfermeros Registrados",
+            text = "Registered Nurses",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
