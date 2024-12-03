@@ -1,8 +1,7 @@
-package com.example.hospital.ui.home
 
-import ListScreen
-import SearchScreen
-import LoginScreen
+import com.example.hospital.ui.nurses.search.SearchScreen
+import com.example.hospital.ui.nurses.list.ListScreen
+import com.example.hospital.ui.auth.LoginScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
