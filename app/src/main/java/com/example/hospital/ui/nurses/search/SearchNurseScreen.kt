@@ -1,7 +1,6 @@
-<<<<<<< Updated upstream:app/src/main/java/com/example/hospital/ui/search/SearchNurseScreen.kt
-=======
+
 package com.example.hospital.ui.nurses.search
->>>>>>> Stashed changes:app/src/main/java/com/example/hospital/ui/nurses/search/SearchNurseScreen.kt
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
