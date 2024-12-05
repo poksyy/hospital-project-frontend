@@ -40,21 +40,29 @@ android {
 }
 
 dependencies {
+    // Jetpack Compose with BOM (Bill of Materials) for version alignment
+    implementation(platform(libs.androidx.compose.bom.v20241100))
+    implementation(libs.androidx.compose.ui.ui) // Core UI library
+    implementation(libs.androidx.compose.material3.material3) // Material Design 3
+    implementation(libs.androidx.compose.ui.ui.tooling.preview) // Preview tools for Compose
+    implementation(libs.runtime.livedata) // LiveData support in Compose
 
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Activity and Lifecycle libraries
+    implementation(libs.androidx.activity.compose) // Activity integration with Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose) // ViewModel in Compose
+    implementation(libs.androidx.lifecycle.runtime.ktx) // Lifecycle extensions for Kotlin
+
+    // Core AndroidX library
+    implementation(libs.androidx.core.ktx) // Kotlin extensions for Android Core
+
+    // Testing dependencies
+    testImplementation(libs.junit) // Unit testing framework
+    androidTestImplementation(libs.androidx.compose.ui.ui.test.junit4) // Compose UI testing
+    androidTestImplementation(libs.androidx.junit) // JUnit extensions for Android testing
+    androidTestImplementation(libs.androidx.espresso.core) // UI testing framework
+
+    // Debugging tools
+    debugImplementation(libs.androidx.compose.ui.ui.tooling) // UI debugging tools
+    debugImplementation(libs.androidx.compose.ui.ui.test.manifest) // Manifest testing tools for Compose
 }
+
