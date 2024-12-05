@@ -6,13 +6,17 @@ import com.example.hospital.ui.auth.LoginScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.hospital.R
 import com.example.hospital.ui.theme.HospitalTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,20 +42,16 @@ fun MainScreen() {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             showListScreen -> {
-                // Display the ListScreen component.
                 ListScreen()
             }
 
             showSearchScreen -> {
-                // Display the SearchScreen component.
                 SearchScreen()
             }
 
             showLoginScreen -> {
-                // Display the LoginScreen component with a callback for login results.
                 LoginScreen(onLoginResult = { isSuccess ->
                     if (isSuccess) {
-                        // If login is successful, hide the login screen and show the list screen.
                         showLoginScreen = false
                         showListScreen = true
                     }
@@ -59,36 +59,42 @@ fun MainScreen() {
             }
 
             else -> {
-                // Default: Display the landing page with buttons for navigation.
+                // Default: Display the landing page with a formal and clean UI.
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Row containing navigation buttons.
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        // Button to navigate to the SearchScreen.
-                        Button(onClick = {
-                            showSearchScreen = true
-                        }) {
-                            Text("Search Nurses")
-                        }
-                        // Button to navigate to the ListScreen.
-                        Button(onClick = {
-                            showListScreen = true
-                        }) {
-                            Text("List of Nurses")
-                        }
-                        // Button to navigate to the LoginScreen.
-                        Button(onClick = {
-                            showLoginScreen = true
-                        }) {
-                            Text("Login")
-                        }
-                    }
+                    // Optional: Add an image/logo at the top of the screen (if needed)
+                    Image(
+                        painter = painterResource(id = R.drawable.hospital_logo),  // Replace with your logo resource
+                        contentDescription = "Hospital Logo",
+                        modifier = Modifier
+                            .size(250.dp)
+                            .padding(bottom = 20.dp)
+                    )
+
+                    Text(
+                        text = "Welcome to Hospital Management",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 32.dp)
+                    )
+
+                    // Replacing Card-style buttons with simple Buttons
+                    MainScreenButton(
+                        text = "Search Nurses",
+                        onClick = { showSearchScreen = true }
+                    )
+                    MainScreenButton(
+                        text = "List of Nurses",
+                        onClick = { showListScreen = true }
+                    )
+                    MainScreenButton(
+                        text = "Login",
+                        onClick = { showLoginScreen = true }
+                    )
                 }
             }
         }
@@ -118,5 +124,22 @@ fun MainScreen() {
 fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     Button(onClick = onClick, modifier = modifier) {
         Text("Back")
+    }
+}
+
+// Reusable button composable for the main screen
+@Composable
+fun MainScreenButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .width(350.dp)
+            .padding(vertical = 5.dp),
+        shape = RoundedCornerShape(13.dp)
+    ) {
+        Text(text)
     }
 }

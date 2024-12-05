@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+
     // Jetpack Compose with BOM (Bill of Materials) for version alignment
     implementation(platform(libs.androidx.compose.bom.v20241100))
     implementation(libs.androidx.compose.ui.ui) // Core UI library

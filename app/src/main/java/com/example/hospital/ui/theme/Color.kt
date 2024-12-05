@@ -8,7 +8,7 @@ val PrimaryVariant = Color(0xFF004D40)
 val SecondaryColor = Color(0xFF80CBC4)
 
 // Background and Surface Colors
-val BackgroundColor = Color(0xFFF4F4F4)
+val BackgroundColor = Color(0xFFFFFFFF)
 val SurfaceColor = Color(0xFFFFFFFF)
 
 // Text Colors
