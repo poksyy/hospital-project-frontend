@@ -1,4 +1,5 @@
 package com.example.hospital.ui.auth
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
@@ -13,16 +14,21 @@ import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 
 @Composable
-fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
-    // Variables to store the user input for username and password
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun LoginScreen(loginViewModel: LoginViewModel, onLoginResult: (Boolean) -> Unit) {
+    // Observe the loginResult flow from the ViewModel
+    val loginResult by loginViewModel.loginResult.collectAsState()
 
+    // Connect the text fields to the ViewModel properties
+    var username by remember { mutableStateOf(loginViewModel.username) }
+    var password by remember { mutableStateOf(loginViewModel.password) }
 
-    // Correct credentials (hardcoded)
-    val correctUsername = "admin"
-    val correctPassword = "123"
-
+    // Update the UI based on the loginResult
+    LaunchedEffect(loginResult) {
+        when (loginResult) {
+            is LoginResult.Success -> onLoginResult(true)
+            is LoginResult.Failure -> onLoginResult(false)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -48,9 +54,7 @@ fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
             )
         }
 
-
         Spacer(modifier = Modifier.height(24.dp))
-
 
         // User field
         OutlinedTextField(
@@ -61,7 +65,6 @@ fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-
         // Password field
         OutlinedTextField(
             value = password,
@@ -71,15 +74,12 @@ fun LoginScreen(onLoginResult: (Boolean) -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        // Log in button with custom background and text color
+        // Connect the login button to the ViewModel's login() method
         Button(
             onClick = {
-                if (username == correctUsername && password == correctPassword) {
-                    onLoginResult(true)
-                } else {
-                    onLoginResult(false)
-                }
+                loginViewModel.username = username
+                loginViewModel.password = password
+                loginViewModel.login()
             },
             modifier = Modifier
                 .fillMaxWidth()
