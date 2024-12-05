@@ -3,6 +3,7 @@ package com.example.hospital.ui.home
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.auth.LoginScreen
+import com.example.hospital.ui.auth.LoginViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.hospital.R
@@ -24,7 +24,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HospitalTheme {
-                MainScreen()
+                MainScreen(
+                    loginViewModel = LoginViewModel() // Provide the LoginViewModel instance
+                )
             }
         }
     }
@@ -32,7 +34,9 @@ class MainActivity : ComponentActivity() {
 
 // MainScreen: Controls navigation between different screens.
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    loginViewModel: LoginViewModel
+) {
     // Mutable states to track which screen is currently displayed
     var showListScreen by remember { mutableStateOf(false) }  // Show the list screen
     var showSearchScreen by remember { mutableStateOf(false) } // Show the search screen
@@ -50,12 +54,17 @@ fun MainScreen() {
             }
 
             showLoginScreen -> {
-                LoginScreen(onLoginResult = { isSuccess ->
-                    if (isSuccess) {
-                        showLoginScreen = false
-                        showListScreen = true
+                // Display the LoginScreen component with a callback for login results.
+                LoginScreen(
+                    loginViewModel = loginViewModel,
+                    onLoginResult = { isSuccess ->
+                        if (isSuccess) {
+                            // If login is successful, hide the login screen and show the list screen.
+                            showLoginScreen = false
+                            showListScreen = true
+                        }
                     }
-                })
+                )
             }
 
             else -> {
