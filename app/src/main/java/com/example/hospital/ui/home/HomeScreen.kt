@@ -1,3 +1,4 @@
+package com.example.hospital.ui.home
 
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.nurses.list.ListScreen
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.example.hospital.ui.theme.HospitalTheme
 
 class MainActivity : ComponentActivity() {
@@ -33,60 +35,88 @@ fun MainScreen() {
     var showLoginScreen by remember { mutableStateOf(false) }  // Show the login screen
 
     // Use a `when` expression to decide which screen to show.
-    when {
-        showListScreen -> {
-            // Display the ListScreen component.
-            ListScreen()
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            showListScreen -> {
+                // Display the ListScreen component.
+                ListScreen()
+            }
 
-        showSearchScreen -> {
-            // Display the SearchScreen component.
-            SearchScreen()
-        }
+            showSearchScreen -> {
+                // Display the SearchScreen component.
+                SearchScreen()
+            }
 
-        showLoginScreen -> {
-            // Display the LoginScreen component with a callback for login results.
-            LoginScreen(onLoginResult = { isSuccess ->
-                if (isSuccess) {
-                    // If login is successful, hide the login screen and show the list screen.
-                    showLoginScreen = false
-                    showListScreen = true
-                }
-            })
-        }
-
-        else -> {
-            // Default: Display the landing page with buttons for navigation.
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Row containing navigation buttons.
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    // Button to navigate to the SearchScreen.
-                    Button(onClick = {
-                        showSearchScreen = true
-                    }) {
-                        Text("Search Nurses")
-                    }
-                    // Button to navigate to the ListScreen.
-                    Button(onClick = {
+            showLoginScreen -> {
+                // Display the LoginScreen component with a callback for login results.
+                LoginScreen(onLoginResult = { isSuccess ->
+                    if (isSuccess) {
+                        // If login is successful, hide the login screen and show the list screen.
+                        showLoginScreen = false
                         showListScreen = true
-                    }) {
-                        Text("List of Nurses")
                     }
-                    // Button to navigate to the LoginScreen.
-                    Button(onClick = {
-                        showLoginScreen = true
-                    }) {
-                        Text("Login")
+                })
+            }
+
+            else -> {
+                // Default: Display the landing page with buttons for navigation.
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Row containing navigation buttons.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        // Button to navigate to the SearchScreen.
+                        Button(onClick = {
+                            showSearchScreen = true
+                        }) {
+                            Text("Search Nurses")
+                        }
+                        // Button to navigate to the ListScreen.
+                        Button(onClick = {
+                            showListScreen = true
+                        }) {
+                            Text("List of Nurses")
+                        }
+                        // Button to navigate to the LoginScreen.
+                        Button(onClick = {
+                            showLoginScreen = true
+                        }) {
+                            Text("Login")
+                        }
                     }
                 }
             }
         }
+
+        // Back button in the bottom right corner
+        if (showListScreen || showSearchScreen || showLoginScreen) {
+            BackButton(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp) // Add some padding for aesthetics
+            ) {
+                // Handle back navigation
+                if (showListScreen) {
+                    showListScreen = false
+                } else if (showSearchScreen) {
+                    showSearchScreen = false
+                } else if (showLoginScreen) {
+                    showLoginScreen = false
+                }
+            }
+        }
+    }
+}
+
+// Composable for the Back Button
+@Composable
+fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Button(onClick = onClick, modifier = modifier) {
+        Text("Back")
     }
 }
