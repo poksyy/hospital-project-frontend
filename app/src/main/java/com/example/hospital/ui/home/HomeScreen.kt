@@ -16,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 import com.example.hospital.ui.theme.HospitalTheme
-import androidx.compose.ui.text.font.FontWeight
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,9 +79,11 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.height(125.dp))
+
                     Image(
                         painter = painterResource(id = R.drawable.hospital_logo),
                         contentDescription = "Hospital Logo",
@@ -96,7 +98,7 @@ fun MainScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = "Manage your hospital tasks with ease",
@@ -104,6 +106,7 @@ fun MainScreen(
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
 
+                    // Buttons for navigating to different screens
                     MainScreenButton(
                         text = "Search Nurses",
                         onClick = { showSearchScreen = true }
@@ -115,6 +118,7 @@ fun MainScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Logout button
                     MainScreenButton(
                         text = "Logout",
                         onClick = onLogout,

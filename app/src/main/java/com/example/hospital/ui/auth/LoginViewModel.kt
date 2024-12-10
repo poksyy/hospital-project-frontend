@@ -7,10 +7,11 @@ import kotlinx.coroutines.flow.StateFlow
 sealed class LoginResult {
     object Success : LoginResult()
     object Failure : LoginResult()
+    object None : LoginResult()
 }
 
 class LoginViewModel : ViewModel() {
-    private val _loginResult = MutableStateFlow<LoginResult>(LoginResult.Failure)
+    private val _loginResult = MutableStateFlow<LoginResult>(LoginResult.None)
     val loginResult: StateFlow<LoginResult> = _loginResult
 
     private var _username: String = ""
@@ -28,7 +29,6 @@ class LoginViewModel : ViewModel() {
         }
 
     fun login() {
-        // Hardcoded correct credentials
         val correctUsername = "admin"
         val correctPassword = "123"
 
