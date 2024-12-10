@@ -18,6 +18,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 import com.example.hospital.ui.theme.HospitalTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.ui.text.font.FontWeight
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,28 +28,35 @@ class MainActivity : ComponentActivity() {
         setContent {
             HospitalTheme {
                 MainScreen(
-                    loginViewModel = LoginViewModel() // Provide the LoginViewModel instance
+                    loginViewModel = LoginViewModel()
                 )
             }
         }
     }
 }
 
-// MainScreen: Controls navigation between different screens.
 @Composable
 fun MainScreen(
     loginViewModel: LoginViewModel
 ) {
-    // Mutable states to track which screen is currently displayed
-    var showListScreen by remember { mutableStateOf(false) }  // Show the list screen
-    var showSearchScreen by remember { mutableStateOf(false) } // Show the search screen
-    var showLoginScreen by remember { mutableStateOf(false) }  // Show the login screen
+    var showListScreen by remember { mutableStateOf(false) }
+    var showSearchScreen by remember { mutableStateOf(false) }
+    var showLoginScreen by remember { mutableStateOf(false) }
 
-    // Use a `when` expression to decide which screen to show.
+    val onBackPressed: () -> Unit = {
+        if (showListScreen) {
+            showListScreen = false
+        } else if (showSearchScreen) {
+            showSearchScreen = false
+        } else if (showLoginScreen) {
+            showLoginScreen = false
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             showListScreen -> {
-                ListScreen()
+                ListScreen(onBackPressed = onBackPressed)
             }
 
             showSearchScreen -> {
@@ -54,12 +64,10 @@ fun MainScreen(
             }
 
             showLoginScreen -> {
-                // Display the LoginScreen component with a callback for login results.
                 LoginScreen(
                     loginViewModel = loginViewModel,
                     onLoginResult = { isSuccess ->
                         if (isSuccess) {
-                            // If login is successful, hide the login screen and show the list screen.
                             showLoginScreen = false
                             showListScreen = true
                         }
@@ -68,7 +76,6 @@ fun MainScreen(
             }
 
             else -> {
-                // Default: Display the landing page with a formal and clean UI.
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -76,22 +83,28 @@ fun MainScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Optional: Add an image/logo at the top of the screen (if needed)
                     Image(
-                        painter = painterResource(id = R.drawable.hospital_logo),  // Replace with your logo resource
+                        painter = painterResource(id = R.drawable.hospital_logo),
                         contentDescription = "Hospital Logo",
-                        modifier = Modifier
-                            .size(250.dp)
-                            .padding(bottom = 20.dp)
+                        modifier = Modifier.size(200.dp)
                     )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Text(
+                        text = "Hospital Management",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = "Welcome to Hospital Management",
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
 
-                    // Replacing Card-style buttons with simple Buttons
                     MainScreenButton(
                         text = "Search Nurses",
                         onClick = { showSearchScreen = true }
@@ -107,36 +120,9 @@ fun MainScreen(
                 }
             }
         }
-
-        // Back button in the bottom right corner
-        if (showListScreen || showSearchScreen || showLoginScreen) {
-            BackButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp) // Add some padding for aesthetics
-            ) {
-                // Handle back navigation
-                if (showListScreen) {
-                    showListScreen = false
-                } else if (showSearchScreen) {
-                    showSearchScreen = false
-                } else if (showLoginScreen) {
-                    showLoginScreen = false
-                }
-            }
-        }
     }
 }
 
-// Composable for the Back Button
-@Composable
-fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Button(onClick = onClick, modifier = modifier) {
-        Text("Back")
-    }
-}
-
-// Reusable button composable for the main screen
 @Composable
 fun MainScreenButton(
     text: String,
