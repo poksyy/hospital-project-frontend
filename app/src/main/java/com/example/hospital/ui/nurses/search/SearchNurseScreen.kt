@@ -1,54 +1,99 @@
 package com.example.hospital.ui.nurses.search
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hospital.R
 
 @Composable
-// Observe the search text and filtered nurse list from the SearchNurseViewModel.
-fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
-    // Observe  the state of the text.
+fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), onBackPressed: () -> Unit) {
     val searchText by viewModel.searchText
-    // Observe the state of the filtered list.
     val filteredNurses by viewModel.filteredNurses
 
-    // Column for the inputs structure.
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Text(
-            text = "Search nurse by name:",
-            modifier = Modifier.padding(bottom = 20.dp),
-            fontSize = 25.sp
-        )
 
-        // Search bar for nurses.
-        TextField(value = searchText,
-            onValueChange = { newText -> viewModel.updateSearchText(newText) },
-            label = { Text("Search nurses:") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        // Information text for how many nurses has been found.
-        Text(
-            text = "Showing ${filteredNurses.size} nurses",
-            modifier = Modifier.padding(top = 8.dp),
-            color = Color.Blue
-        )
+        Spacer(modifier = Modifier.height(64.dp))
 
-        // Show the nurses list below the search bar.
-        filteredNurses.forEach { nurse ->
+        // Header with Back Button, Title, and Logo
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(onClick = { onBackPressed() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
             Text(
-                text = nurse, modifier = Modifier.padding(top = 8.dp)
+                text = "Search Nurses",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Image(
+                painter = painterResource(id = R.drawable.hospital_logo),
+                contentDescription = "Hospital Logo",
+                modifier = Modifier.size(50.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Search Bar and Information
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Search nurse by name:",
+                modifier = Modifier.padding(bottom = 20.dp),
+                fontSize = 25.sp
+            )
+
+            // Search bar for nurses.
+            TextField(
+                value = searchText,
+                onValueChange = { newText -> viewModel.updateSearchText(newText) },
+                label = { Text("Search nurses:") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            // Information text for how many nurses have been found.
+            Text(
+                text = "Showing ${filteredNurses.size} nurses",
+                modifier = Modifier.padding(top = 8.dp),
+                color = Color.Blue
+            )
+
+            // Show the nurses list below the search bar.
+            filteredNurses.forEach { nurse ->
+                Text(
+                    text = nurse,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
     }
 }

@@ -14,12 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 import com.example.hospital.ui.theme.HospitalTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.text.font.FontWeight
 
 class MainActivity : ComponentActivity() {
@@ -27,9 +26,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             HospitalTheme {
-                MainScreen(
-                    loginViewModel = LoginViewModel()
-                )
+                var isLoggedIn by remember { mutableStateOf(false) }
+
+                if (isLoggedIn) {
+                    MainScreen(
+                        loginViewModel = LoginViewModel(),
+                        onLogout = { isLoggedIn = false }
+                    )
+                } else {
+                    LoginScreen(
+                        loginViewModel = LoginViewModel(),
+                        onLoginResult = { isSuccess ->
+                            if (isSuccess) {
+                                isLoggedIn = true
+                            }
+                        },
+                    )
+                }
             }
         }
     }
@@ -37,19 +50,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
-    loginViewModel: LoginViewModel
+    loginViewModel: LoginViewModel,
+    onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
-    var showLoginScreen by remember { mutableStateOf(false) }
 
     val onBackPressed: () -> Unit = {
         if (showListScreen) {
             showListScreen = false
         } else if (showSearchScreen) {
             showSearchScreen = false
-        } else if (showLoginScreen) {
-            showLoginScreen = false
         }
     }
 
@@ -60,19 +71,7 @@ fun MainScreen(
             }
 
             showSearchScreen -> {
-                SearchScreen()
-            }
-
-            showLoginScreen -> {
-                LoginScreen(
-                    loginViewModel = loginViewModel,
-                    onLoginResult = { isSuccess ->
-                        if (isSuccess) {
-                            showLoginScreen = false
-                            showListScreen = true
-                        }
-                    }
-                )
+                SearchScreen(onBackPressed = onBackPressed)
             }
 
             else -> {
@@ -86,7 +85,7 @@ fun MainScreen(
                     Image(
                         painter = painterResource(id = R.drawable.hospital_logo),
                         contentDescription = "Hospital Logo",
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier.size(250.dp)
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -100,7 +99,7 @@ fun MainScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Welcome to Hospital Management",
+                        text = "Manage your hospital tasks with ease",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 32.dp)
                     )
@@ -113,9 +112,13 @@ fun MainScreen(
                         text = "List of Nurses",
                         onClick = { showListScreen = true }
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     MainScreenButton(
-                        text = "Login",
-                        onClick = { showLoginScreen = true }
+                        text = "Logout",
+                        onClick = onLogout,
+                        buttonColor = Color(0xFFB71C1C)
                     )
                 }
             }
@@ -126,14 +129,16 @@ fun MainScreen(
 @Composable
 fun MainScreenButton(
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    buttonColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .width(350.dp)
             .padding(vertical = 5.dp),
-        shape = RoundedCornerShape(13.dp)
+        shape = RoundedCornerShape(13.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
     ) {
         Text(text)
     }
