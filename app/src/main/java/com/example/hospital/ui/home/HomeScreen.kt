@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
+    remoteViewModel: RemoteViewModel = RemoteViewModel(),
     loginViewModel: LoginViewModel,
     onLogout: () -> Unit
 ) {
@@ -124,6 +125,21 @@ fun MainScreen(
                         onClick = onLogout,
                         buttonColor = Color(0xFFB71C1C)
                     )
+
+                    val remoteViewModel = RemoteViewModel()
+                    remoteViewModel.getRemoteNurse()
+
+                    when (val uiState = remoteViewModel.remoteMessageUiState) {
+                        is RemoteMessageUiState.Success -> {
+                            Text("Nurse Name: ${uiState.remoteMessage.name}")
+                        }
+                        is RemoteMessageUiState.Error -> {
+                            Text("Error occurred while fetching nurse data")
+                        }
+                        RemoteMessageUiState.Loading -> {
+                            CircularProgressIndicator()
+                        }
+                    }
                 }
             }
         }
