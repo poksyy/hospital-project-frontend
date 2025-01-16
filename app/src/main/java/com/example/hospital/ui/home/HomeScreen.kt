@@ -126,7 +126,6 @@ fun MainScreen(
                         buttonColor = Color(0xFFB71C1C)
                     )
 
-                    val remoteViewModel = RemoteViewModel()
                     remoteViewModel.getRemoteNurse()
 
                     when (val uiState = remoteViewModel.remoteMessageUiState) {
