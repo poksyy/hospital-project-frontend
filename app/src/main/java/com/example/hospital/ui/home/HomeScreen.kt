@@ -130,7 +130,7 @@ fun MainScreen(
 
                     when (val uiState = remoteViewModel.remoteMessageUiState) {
                         is RemoteMessageUiState.Success -> {
-                            Text("Nurse Name: ${uiState.remoteMessage.name}")
+                            Text("Nurse Name: ${uiState.remoteMessage}")
                         }
                         is RemoteMessageUiState.Error -> {
                             Text("Error occurred while fetching nurse data")

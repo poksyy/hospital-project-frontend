@@ -15,14 +15,14 @@ import retrofit2.http.*
 data class Nurse(val name: String = "", val age: Int)
 
 sealed interface RemoteMessageUiState {
-    data class Success(val remoteMessage: Nurse) : RemoteMessageUiState
+    data class Success(val remoteMessage: Response<List<Nurse>>) : RemoteMessageUiState
     object Error : RemoteMessageUiState
     object Loading : RemoteMessageUiState
 }
 
 interface RemoteNurseApi {
-    @GET("nurse")
-    suspend fun getRemoteNurse(): Nurse
+    @GET("/nurse/directory")
+    suspend fun getRemoteNurse():  Response<List<Nurse>>
 
     @POST("nurse/authentication")
     suspend fun login(@Body nurse: Nurse): Response<String>
@@ -67,7 +67,7 @@ class RemoteViewModel : ViewModel() {
             remoteMessageUiState = RemoteMessageUiState.Loading
             try {
                 val infoNurse = RetrofitInstance.api.getRemoteNurse()
-                Log.d("RemoteViewModel", "Nurse fetched: ${infoNurse.name}")
+                Log.d("RemoteViewModel", "Nurse fetched: ${infoNurse}")
                 remoteMessageUiState = RemoteMessageUiState.Success(infoNurse)
             } catch (e: Exception) {
                 Log.e("RemoteViewModel", "Error fetching nurse: ${e.message}")
