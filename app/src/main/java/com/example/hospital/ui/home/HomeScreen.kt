@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hospital.R
 import com.example.hospital.ui.theme.HospitalTheme
 
@@ -50,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(
-    remoteViewModel: RemoteViewModel = RemoteViewModel(),
+    remoteViewModel: RemoteViewModel = viewModel(),
     loginViewModel: LoginViewModel,
     onLogout: () -> Unit
 ) {
@@ -126,11 +127,14 @@ fun MainScreen(
                         buttonColor = Color(0xFFB71C1C)
                     )
 
-                    remoteViewModel.getRemoteNurse()
+                    LaunchedEffect(Unit) {
+                        remoteViewModel.getRemoteNurse()
+                    }
 
                     when (val uiState = remoteViewModel.remoteMessageUiState) {
                         is RemoteMessageUiState.Success -> {
-                            Text("Nurse Name: ${uiState.remoteMessage}")
+                            val nurses = uiState.remoteMessage.body() ?: emptyList()
+                            Text("Nurse Name: ${nurses.joinToString { it.name }}")
                         }
                         is RemoteMessageUiState.Error -> {
                             Text("Error occurred while fetching nurse data")
@@ -144,6 +148,7 @@ fun MainScreen(
         }
     }
 }
+
 
 @Composable
 fun MainScreenButton(
