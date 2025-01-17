@@ -65,5 +65,11 @@ dependencies {
     // Debugging tools
     debugImplementation(libs.androidx.compose.ui.ui.tooling) // UI debugging tools
     debugImplementation(libs.androidx.compose.ui.ui.test.manifest) // Manifest testing tools for Compose
+
+    // Retrofit, Okhttp and Gson dependencies
+    implementation (libs.retrofit)
+    implementation(libs.okhttp)
+    implementation (libs.converter.gson)
+
 }
 
