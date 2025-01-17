@@ -26,9 +26,13 @@ class RemoteViewModel : ViewModel() {
         viewModelScope.launch {
             remoteMessageUiState = RemoteMessageUiState.Loading
             try {
-                val infoNurse = RetrofitInstance.api.getRemoteNurse()
-                Log.d("RemoteViewModel", "Nurse fetched: $infoNurse")
-                remoteMessageUiState = RemoteMessageUiState.Success(infoNurse)
+                val response = RetrofitInstance.api.getRemoteNurse()
+                Log.d("RemoteViewModel", "Nurses fetched: $response")
+                if (response.isSuccessful) {
+                    remoteMessageUiState = RemoteMessageUiState.Success(response)
+                } else {
+                    remoteMessageUiState = RemoteMessageUiState.Error
+                }
             } catch (e: Exception) {
                 Log.e("RemoteViewModel", "Error fetching nurse: ${e.message}")
                 remoteMessageUiState = RemoteMessageUiState.Error
@@ -36,3 +40,4 @@ class RemoteViewModel : ViewModel() {
         }
     }
 }
+
