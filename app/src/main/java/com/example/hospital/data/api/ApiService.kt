@@ -5,28 +5,38 @@ import retrofit2.http.*
 
 data class Nurse(val name: String = "", val age: Int)
 
+// ApiService
 interface RemoteNurseApi {
-    @GET("/nurse/directory")
+
+    // TEST
+    @GET("nurse/directory")
     suspend fun getRemoteNurse(): Response<List<Nurse>>
 
+    // POST /authentication -> login()
     @POST("nurse/authentication")
     suspend fun login(@Body nurse: Nurse): Response<String>
 
-    @GET("nurse/directory")
-    suspend fun getAllNurses(): Response<List<Nurse>>
-
-    @GET("nurse/search-by-name/{name}")
-    suspend fun findByName(@Path("name") name: String): Response<Nurse>
-
+    // POST /registration -> register()
     @POST("nurse/registration")
-    suspend fun createNurse(@Body nurse: Nurse): Response<Nurse>
+    suspend fun register(@Body nurse: Nurse): Response<Nurse>
 
+    // GET /directory -> getNurseDirectory()
+    @GET("nurse/directory")
+    suspend fun getNurseDirectory(): Response<List<Nurse>>
+
+    // GET /search-by-name/{name} -> searchNursesByName()
+    @GET("nurse/search-by-name/{name}")
+    suspend fun searchNursesByName(@Path("name") name: String): Response<Nurse>
+
+    // GET /profile/{id} -> getProfile()
     @GET("nurse/profile/{id}")
-    suspend fun getNurseProfile(@Path("id") id: Int): Response<Nurse>
+    suspend fun getProfile(@Path("id") id: Int): Response<Nurse>
 
+    // PUT /modification/{id} -> updateNurse()
     @PUT("nurse/modification/{id}")
     suspend fun updateNurse(@Path("id") id: Int, @Body nurse: Nurse): Response<Nurse>
 
+    // DELETE /deletion/{id} -> deleteNurse()
     @DELETE("nurse/deletion/{id}")
     suspend fun deleteNurse(@Path("id") id: Int): Response<String>
 }
