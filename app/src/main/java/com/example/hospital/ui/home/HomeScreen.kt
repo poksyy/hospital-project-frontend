@@ -1,9 +1,9 @@
 package com.example.hospital.ui.home
 
+import AuthViewModel
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.auth.LoginScreen
-import com.example.hospital.ui.auth.LoginViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,17 +31,17 @@ class MainActivity : ComponentActivity() {
 
                 if (isLoggedIn) {
                     MainScreen(
-                        loginViewModel = LoginViewModel(),
+                        authViewModel = AuthViewModel(),
                         onLogout = { isLoggedIn = false }
                     )
                 } else {
                     LoginScreen(
-                        loginViewModel = LoginViewModel(),
+                        authViewModel = AuthViewModel(),
                         onLoginResult = { isSuccess ->
                             if (isSuccess) {
                                 isLoggedIn = true
                             }
-                        },
+                        }
                     )
                 }
             }
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     remoteViewModel: RemoteViewModel = viewModel(),
-    loginViewModel: LoginViewModel,
+    authViewModel: AuthViewModel,
     onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
@@ -134,7 +134,11 @@ fun MainScreen(
                     when (val uiState = remoteViewModel.remoteMessageUiState) {
                         is RemoteMessageUiState.Success -> {
                             val nurses = uiState.remoteMessage.body() ?: emptyList()
-                            Text("Nurse Name: ${nurses.joinToString { it.name }}")
+                            if (nurses.isNotEmpty()) {
+                                Text("Nurse Names: ${nurses.joinToString { it.name ?: "Unknown" }}")
+                            } else {
+                                Text("No nurse data available")
+                            }
                         }
                         is RemoteMessageUiState.Error -> {
                             Text("Error occurred while fetching nurse data")
@@ -148,7 +152,6 @@ fun MainScreen(
         }
     }
 }
-
 
 @Composable
 fun MainScreenButton(
