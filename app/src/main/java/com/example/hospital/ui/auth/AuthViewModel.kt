@@ -1,45 +1,55 @@
-package com.example.hospital.ui.auth
-
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.example.hospital.data.api.Nurse
+import com.example.hospital.data.api.RetrofitInstance
 
-sealed class LoginResult {
-    object Success : LoginResult()
-    object Failure : LoginResult()
-    object None : LoginResult()
-}
+class AuthViewModel : ViewModel() {
 
-class LoginViewModel : ViewModel() {
     private val _loginResult = MutableStateFlow<LoginResult>(LoginResult.None)
     val loginResult: StateFlow<LoginResult> = _loginResult
 
-    private var _username: String = ""
-    var username: String
-        get() = _username
-        set(value) {
-            _username = value
-        }
-
-    private var _password: String = ""
-    var password: String
-        get() = _password
-        set(value) {
-            _password = value
-        }
+    var username by mutableStateOf("")
+    var password by mutableStateOf("")
 
     fun login() {
-        val correctUsername = "admin"
-        val correctPassword = "123"
+        if (username.isBlank() || password.isBlank()) {
+            _loginResult.value = LoginResult.Failure("Username and password cannot be empty")
+            return
+        }
 
-        if (username == correctUsername && password == correctPassword) {
-            _loginResult.value = LoginResult.Success
-        } else {
-            _loginResult.value = LoginResult.Failure
+        val nurse = Nurse(user = username, password = password)
+
+        viewModelScope.launch {
+            _loginResult.value = LoginResult.Loading
+            try {
+                val response = RetrofitInstance.api.login(nurse)
+                if (response.isSuccessful && response.body() != null) {
+                    _loginResult.value = LoginResult.Success(response.body()!!)
+                } else {
+                    _loginResult.value = LoginResult.Failure("Login failed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _loginResult.value = LoginResult.Failure("Error: ${e.message}")
+                Log.e("AuthViewModel", "Login error: ${e.message}")
+            }
         }
     }
 
-    fun register() {
-        // TODO Implement registration
+    fun resetLoginState() {
+        _loginResult.value = LoginResult.None
     }
+}
+
+sealed class LoginResult {
+    object None : LoginResult()
+    object Loading : LoginResult()
+    data class Success(val nurse: Nurse) : LoginResult()
+    data class Failure(val error: String) : LoginResult()
 }

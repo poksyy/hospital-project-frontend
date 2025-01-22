@@ -12,7 +12,7 @@ interface RemoteNurseApi {
 
     // POST /authentication -> login()
     @POST("nurse/authentication")
-    suspend fun login(@Body nurse: Nurse): Response<String>
+    suspend fun login(@Body nurse: Nurse): Response<Nurse>
 
     // POST /registration -> register()
     @POST("nurse/registration")
