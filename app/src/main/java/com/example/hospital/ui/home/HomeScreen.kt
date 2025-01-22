@@ -1,9 +1,6 @@
 package com.example.hospital.ui.home
 
 import AuthViewModel
-import com.example.hospital.ui.nurses.search.SearchScreen
-import com.example.hospital.ui.nurses.list.ListScreen
-import com.example.hospital.ui.auth.LoginScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,41 +16,65 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.hospital.R
+import com.example.hospital.ui.auth.LoginScreen
+import com.example.hospital.ui.auth.RegisterScreen
+import com.example.hospital.ui.nurses.list.ListScreen
+import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.theme.HospitalTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            HospitalTheme {
-                var isLoggedIn by remember { mutableStateOf(false) }
+        setContent { HospitalTheme { AppNavigation() } }
+    }
+}
 
-                if (isLoggedIn) {
-                    MainScreen(
-                        authViewModel = AuthViewModel(),
-                        onLogout = { isLoggedIn = false }
-                    )
-                } else {
-                    LoginScreen(
-                        authViewModel = AuthViewModel(),
-                        onLoginResult = { isSuccess ->
-                            if (isSuccess) {
-                                isLoggedIn = true
-                            }
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    var isLoggedIn by remember { mutableStateOf(false) }
+
+    NavHost(navController = navController, startDestination = if (isLoggedIn) "main" else "login") {
+        composable("login") {
+            LoginScreen(
+                    authViewModel = AuthViewModel(),
+                    onNavigateToRegister = { navController.navigate("register") },
+                    onLoginResult = { isSuccess ->
+                        if (isSuccess) {
+                            isLoggedIn = true
+                            navController.navigate("main") { popUpTo("login") { inclusive = true } }
                         }
-                    )
-                }
-            }
+                    }
+            )
         }
+
+        composable("register") { RegisterScreen(onBackPressed = { navController.popBackStack() }) }
+
+        composable("main") {
+            MainScreen(
+                    authViewModel = AuthViewModel(),
+                    onLogout = {
+                        isLoggedIn = false
+                        navController.popBackStack("login", inclusive = false)
+                    }
+            )
+        }
+
+        composable("search") { SearchScreen(onBackPressed = { navController.popBackStack() }) }
+
+        composable("list") { ListScreen(onBackPressed = { navController.popBackStack() }) }
     }
 }
 
 @Composable
 fun MainScreen(
-    remoteViewModel: RemoteViewModel = viewModel(),
-    authViewModel: AuthViewModel,
-    onLogout: () -> Unit
+        remoteViewModel: RemoteViewModel = viewModel(),
+        authViewModel: AuthViewModel,
+        onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
@@ -71,65 +92,53 @@ fun MainScreen(
             showListScreen -> {
                 ListScreen(onBackPressed = onBackPressed)
             }
-
             showSearchScreen -> {
                 SearchScreen(onBackPressed = onBackPressed)
             }
-
             else -> {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(125.dp))
 
                     Image(
-                        painter = painterResource(id = R.drawable.hospital_logo),
-                        contentDescription = "Hospital Logo",
-                        modifier = Modifier.size(250.dp)
+                            painter = painterResource(id = R.drawable.hospital_logo),
+                            contentDescription = "Hospital Logo",
+                            modifier = Modifier.size(250.dp)
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = "Hospital Management",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                            text = "Hospital Management",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Manage your hospital tasks with ease",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 32.dp)
+                            text = "Manage your hospital tasks with ease",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 32.dp)
                     )
 
                     // Buttons for navigating to different screens
-                    MainScreenButton(
-                        text = "Search Nurses",
-                        onClick = { showSearchScreen = true }
-                    )
-                    MainScreenButton(
-                        text = "List of Nurses",
-                        onClick = { showListScreen = true }
-                    )
+                    MainScreenButton(text = "Search Nurses", onClick = { showSearchScreen = true })
+                    MainScreenButton(text = "List of Nurses", onClick = { showListScreen = true })
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Logout button
                     MainScreenButton(
-                        text = "Logout",
-                        onClick = onLogout,
-                        buttonColor = Color(0xFFB71C1C)
+                            text = "Logout",
+                            onClick = onLogout,
+                            buttonColor = Color(0xFFB71C1C)
                     )
 
-                    LaunchedEffect(Unit) {
-                        remoteViewModel.getRemoteNurse()
-                    }
+                    LaunchedEffect(Unit) { remoteViewModel.getRemoteNurse() }
 
                     when (val uiState = remoteViewModel.remoteMessageUiState) {
                         is RemoteMessageUiState.Success -> {
@@ -155,18 +164,14 @@ fun MainScreen(
 
 @Composable
 fun MainScreenButton(
-    text: String,
-    onClick: () -> Unit,
-    buttonColor: Color = MaterialTheme.colorScheme.primary
+        text: String,
+        onClick: () -> Unit,
+        buttonColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
-        onClick = onClick,
-        modifier = Modifier
-            .width(350.dp)
-            .padding(vertical = 5.dp),
-        shape = RoundedCornerShape(13.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
-    ) {
-        Text(text)
-    }
+            onClick = onClick,
+            modifier = Modifier.width(350.dp).padding(vertical = 5.dp),
+            shape = RoundedCornerShape(13.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
+    ) { Text(text) }
 }
