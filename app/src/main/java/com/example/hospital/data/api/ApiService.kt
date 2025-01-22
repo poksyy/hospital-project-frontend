@@ -3,8 +3,6 @@ package com.example.hospital.data.api
 import retrofit2.Response
 import retrofit2.http.*
 
-data class Nurse(val name: String = "", val age: Int)
-
 // ApiService
 interface RemoteNurseApi {
 
@@ -14,7 +12,7 @@ interface RemoteNurseApi {
 
     // POST /authentication -> login()
     @POST("nurse/authentication")
-    suspend fun login(@Body nurse: Nurse): Response<String>
+    suspend fun login(@Body nurse: Nurse): Response<Nurse>
 
     // POST /registration -> register()
     @POST("nurse/registration")
