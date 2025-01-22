@@ -16,7 +16,7 @@ interface RemoteNurseApi {
 
     // POST /registration -> register()
     @POST("nurse/registration")
-    suspend fun register(@Body nurse: Nurse): Response<Nurse>
+    suspend fun postRegistration(@Body nurse: Nurse): Response<Nurse>
 
     // GET /directory -> getNurseDirectory()
     @GET("nurse/directory")
