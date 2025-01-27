@@ -25,6 +25,7 @@ import com.example.hospital.ui.auth.RegisterScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.theme.HospitalTheme
+import com.example.hospital.ui.viewmodel.RemoteViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,9 +73,9 @@ fun AppNavigation() {
 
 @Composable
 fun MainScreen(
-        remoteViewModel: RemoteViewModel = viewModel(),
-        authViewModel: AuthViewModel,
-        onLogout: () -> Unit
+    remoteViewModel: RemoteViewModel = viewModel(),
+    authViewModel: AuthViewModel,
+    onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
@@ -137,25 +138,6 @@ fun MainScreen(
                             onClick = onLogout,
                             buttonColor = Color(0xFFB71C1C)
                     )
-
-                    LaunchedEffect(Unit) { remoteViewModel.getRemoteNurse() }
-
-                    when (val uiState = remoteViewModel.remoteMessageUiState) {
-                        is RemoteMessageUiState.Success -> {
-                            val nurses = uiState.remoteMessage.body() ?: emptyList()
-                            if (nurses.isNotEmpty()) {
-                                Text("Nurse Names: ${nurses.joinToString { it.name ?: "Unknown" }}")
-                            } else {
-                                Text("No nurse data available")
-                            }
-                        }
-                        is RemoteMessageUiState.Error -> {
-                            Text("Error occurred while fetching nurse data")
-                        }
-                        RemoteMessageUiState.Loading -> {
-                            CircularProgressIndicator()
-                        }
-                    }
                 }
             }
         }
