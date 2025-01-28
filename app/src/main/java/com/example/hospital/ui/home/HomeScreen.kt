@@ -54,7 +54,7 @@ fun AppNavigation() {
             )
         }
 
-        composable("register") { RegisterScreen(onBackPressed = { navController.popBackStack() }) }
+        composable("register") { RegisterScreen(navController = navController) }
 
         composable("main") {
             MainScreen(
@@ -74,9 +74,9 @@ fun AppNavigation() {
 
 @Composable
 fun MainScreen(
-    remoteViewModel: RemoteViewModel = viewModel(),
-    authViewModel: AuthViewModel,
-    onLogout: () -> Unit
+        remoteViewModel: RemoteViewModel = viewModel(),
+        authViewModel: AuthViewModel,
+        onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }

@@ -72,5 +72,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation (libs.converter.gson)
 
+    // Navigation dependency
+    implementation(libs.navigation.compose.v277)
 }
 
