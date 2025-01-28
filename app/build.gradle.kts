@@ -54,7 +54,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx) // Lifecycle extensions for Kotlin
 
     // Core AndroidX library
-    implementation(libs.androidx.core.ktx) // Kotlin extensions for Android Core
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.navigation.compose) // Kotlin extensions for Android Core
 
     // Testing dependencies
     testImplementation(libs.junit) // Unit testing framework
