@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.hospital.R
 import com.example.hospital.ui.auth.LoginScreen
+import com.example.hospital.ui.profile.ProfileScreen
 import com.example.hospital.ui.auth.RegisterScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.nurses.search.SearchScreen
@@ -66,8 +67,8 @@ fun AppNavigation() {
         }
 
         composable("search") { SearchScreen(onBackPressed = { navController.popBackStack() }) }
-
         composable("list") { ListScreen(onBackPressed = { navController.popBackStack() }) }
+        composable("profile") { ProfileScreen(onBackPressed = { navController.popBackStack() }) }
     }
 }
 
@@ -79,11 +80,14 @@ fun MainScreen(
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
+    var showUserScreen by remember { mutableStateOf(false) }
 
     val onBackPressed: () -> Unit = {
         if (showListScreen) {
             showListScreen = false
         } else if (showSearchScreen) {
+            showSearchScreen = false
+        } else if (showUserScreen) {
             showSearchScreen = false
         }
     }
@@ -95,6 +99,9 @@ fun MainScreen(
             }
             showSearchScreen -> {
                 SearchScreen(onBackPressed = onBackPressed)
+            }
+            showUserScreen -> {
+                ProfileScreen(onBackPressed = onBackPressed)
             }
             else -> {
                 Column(
@@ -129,6 +136,7 @@ fun MainScreen(
                     // Buttons for navigating to different screens
                     MainScreenButton(text = "Search Nurses", onClick = { showSearchScreen = true })
                     MainScreenButton(text = "List of Nurses", onClick = { showListScreen = true })
+                    MainScreenButton(text = "Profile", onClick = { showUserScreen = true })
 
                     Spacer(modifier = Modifier.height(16.dp))
 
