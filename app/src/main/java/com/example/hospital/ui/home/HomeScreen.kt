@@ -25,7 +25,6 @@ import com.example.hospital.ui.auth.RegisterScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.theme.HospitalTheme
-import com.example.hospital.ui.viewmodel.RemoteViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,9 +72,9 @@ fun AppNavigation() {
 
 @Composable
 fun MainScreen(
-        remoteViewModel: RemoteViewModel = viewModel(),
-        authViewModel: AuthViewModel,
-        onLogout: () -> Unit
+    remoteViewModel: RemoteViewModel = viewModel(),
+    authViewModel: AuthViewModel,
+    onLogout: () -> Unit
 ) {
     var showListScreen by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
