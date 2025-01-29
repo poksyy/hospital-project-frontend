@@ -13,7 +13,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.hospital.R
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hospital.ui.viewmodel.RemoteViewModel
+import com.example.hospital.ui.home.RemoteViewModel
 import kotlinx.coroutines.launch
 
 @Composable

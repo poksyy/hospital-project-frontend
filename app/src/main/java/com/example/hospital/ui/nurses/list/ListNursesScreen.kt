@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hospital.R
 import com.example.hospital.data.api.Nurse
-import com.example.hospital.ui.viewmodel.NursesListViewModel
 
 @Composable
 fun ListScreen(

@@ -1,4 +1,4 @@
-package com.example.hospital.ui.viewmodel
+package com.example.hospital.ui.home
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -11,12 +11,11 @@ import com.example.hospital.data.api.RetrofitInstance
 sealed interface RemoteMessageUiState {
     data class Success(val nurses: List<Nurse>) : RemoteMessageUiState
     data class Error(val message: String) : RemoteMessageUiState
-    object Loading : RemoteMessageUiState
+    data object Loading : RemoteMessageUiState
 }
 
 class RemoteViewModel : ViewModel() {
-    var remoteMessageUiState: RemoteMessageUiState by mutableStateOf(RemoteMessageUiState.Loading)
-        private set
+    private var remoteMessageUiState: RemoteMessageUiState by mutableStateOf(RemoteMessageUiState.Loading)
 
     suspend fun postRegistration(user: String, password: String): Result<Nurse> {
         return try {

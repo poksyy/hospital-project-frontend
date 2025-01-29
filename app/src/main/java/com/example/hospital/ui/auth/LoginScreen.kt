@@ -1,6 +1,5 @@
 package com.example.hospital.ui.auth
 
-import AuthViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button

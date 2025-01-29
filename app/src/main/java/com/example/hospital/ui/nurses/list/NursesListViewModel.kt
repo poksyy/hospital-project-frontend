@@ -1,8 +1,9 @@
-package com.example.hospital.ui.viewmodel
+package com.example.hospital.ui.nurses.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hospital.data.api.Nurse
+import com.example.hospital.ui.home.RemoteViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
