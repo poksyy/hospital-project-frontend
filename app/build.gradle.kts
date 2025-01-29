@@ -72,5 +72,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation (libs.converter.gson)
 
+    // Navigation dependency
+    implementation(libs.androidx.navigation.compose)
+
 }
 

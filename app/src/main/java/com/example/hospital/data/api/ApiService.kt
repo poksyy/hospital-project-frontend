@@ -1,14 +1,11 @@
 package com.example.hospital.data.api
 
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
 // ApiService
 interface RemoteNurseApi {
-
-    // TEST
-    @GET("nurse/directory")
-    suspend fun getRemoteNurse(): Response<List<Nurse>>
 
     // POST /authentication -> login()
     @POST("nurse/authentication")
@@ -37,4 +34,13 @@ interface RemoteNurseApi {
     // DELETE /deletion/{id} -> deleteNurse()
     @DELETE("nurse/deletion/{id}")
     suspend fun deleteNurse(@Path("id") id: Int): Response<String>
+
+    // GET /checkUserAvailability?user={user} -> checkUserAvailability()
+    @GET("nurse/checkUserAvailability")
+    suspend fun checkUserAvailability(@Query("user") user: String): Response<Boolean>
+
+    // GET /profile/{id}/image -> getImageNurse()
+    @Streaming
+    @GET("nurse/profile/{id}/image")
+    suspend fun getNurseImage(@Path("id") id: Int): Response<ResponseBody>
 }

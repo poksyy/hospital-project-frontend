@@ -59,7 +59,7 @@ fun AppNavigation() {
             )
         }
 
-        composable("register") { RegisterScreen(onBackPressed = { navController.popBackStack() }) }
+        composable("register") { RegisterScreen(navController = navController) }
 
         composable("main") {
             MainScreen(
