@@ -3,10 +3,10 @@ package com.example.hospital.ui.nurses.search
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,16 +18,22 @@ import androidx.compose.ui.unit.sp
 import com.example.hospital.R
 
 @Composable
-fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), onBackPressed: () -> Unit) {
-    val searchText by viewModel.searchText
-    val filteredNurses by viewModel.filteredNurses
+fun SearchScreen(
+    viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    onBackPressed: () -> Unit
+) {
+    val searchText by viewModel.searchText.collectAsState()
+    val filteredNurses by viewModel.filteredNurses.collectAsState()
+    val errorMessage by viewModel.error.collectAsState()
+
+    // Fetch nurses when the screen is loaded
+    viewModel.searchNurses()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Spacer(modifier = Modifier.height(64.dp))
 
         // Header with Back Button, Title, and Logo
@@ -37,7 +43,7 @@ fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.
         ) {
             IconButton(onClick = { onBackPressed() }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier.size(24.dp)
                 )
@@ -53,6 +59,7 @@ fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Hospital logo
             Image(
                 painter = painterResource(id = R.drawable.hospital_logo),
                 contentDescription = "Hospital Logo",
@@ -80,6 +87,7 @@ fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
             // Information text for how many nurses have been found.
             Text(
                 text = "Showing ${filteredNurses.size} nurses",
@@ -90,8 +98,17 @@ fun SearchScreen(viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.
             // Show the nurses list below the search bar.
             filteredNurses.forEach { nurse ->
                 Text(
-                    text = nurse,
+                    text = nurse.name,
                     modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            // Show an error message if the nurse is not found
+            errorMessage?.let {
+                Text(
+                    text = it,  // Error message text
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }
