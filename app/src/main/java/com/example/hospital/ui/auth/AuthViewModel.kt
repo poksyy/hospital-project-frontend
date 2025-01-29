@@ -1,3 +1,8 @@
+package com.example.hospital.ui.auth
+
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,8 +13,9 @@ import com.example.hospital.data.api.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loginResult = MutableStateFlow<LoginResult>(LoginResult.None)
     val loginResult: StateFlow<LoginResult> = _loginResult
@@ -33,7 +39,15 @@ class AuthViewModel : ViewModel() {
             try {
                 val response = RetrofitInstance.api.login(nurse)
                 if (response.isSuccessful && response.body() != null) {
-                    _loginResult.value = LoginResult.Success(response.body()!!)
+                    val loggedNurse = response.body()!!
+                    // Save the nurse ID in the SharedPreferences
+                    loggedNurse.id?.let { nurseId ->
+                        getApplication<Application>().getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+                            .edit()
+                            .putInt("logged_nurse_id", nurseId)
+                            .apply()
+                    }
+                    _loginResult.value = LoginResult.Success(loggedNurse)
                 } else {
                     _loginResult.value = LoginResult.Failure("Login failed: ${response.message()}")
                 }
@@ -41,6 +55,16 @@ class AuthViewModel : ViewModel() {
                 _loginResult.value = LoginResult.Failure("Error: ${e.message}")
             }
         }
+    }
+
+    fun logout() {
+        // Clean SharedPreferences when the user logout.
+        getApplication<Application>().getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .remove("logged_nurse_id")
+            .apply()
+
+        resetLoginState()
     }
 
     fun register(user: String, password: String, onSuccess: () -> Unit = {}) {
@@ -106,8 +130,8 @@ class AuthViewModel : ViewModel() {
 }
 
 sealed class LoginResult {
-    object None : LoginResult()
-    object Loading : LoginResult()
+    data object None : LoginResult()
+    data object Loading : LoginResult()
     data class Success(val nurse: Nurse) : LoginResult()
     data class Failure(val error: String) : LoginResult()
 }

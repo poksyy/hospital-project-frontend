@@ -1,6 +1,6 @@
 package com.example.hospital.ui.home
 
-import AuthViewModel
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,12 +21,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.hospital.R
+import com.example.hospital.ui.auth.AuthViewModel
 import com.example.hospital.ui.auth.LoginScreen
 import com.example.hospital.ui.profile.ProfileScreen
 import com.example.hospital.ui.auth.RegisterScreen
 import com.example.hospital.ui.nurses.list.ListScreen
 import com.example.hospital.ui.nurses.search.SearchScreen
 import com.example.hospital.ui.theme.HospitalTheme
+import com.example.hospital.ui.factory.ViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,18 +41,21 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     var isLoggedIn by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     NavHost(navController = navController, startDestination = if (isLoggedIn) "main" else "login") {
         composable("login") {
             LoginScreen(
-                    authViewModel = AuthViewModel(),
-                    onNavigateToRegister = { navController.navigate("register") },
-                    onLoginResult = { isSuccess ->
-                        if (isSuccess) {
-                            isLoggedIn = true
-                            navController.navigate("main") { popUpTo("login") { inclusive = true } }
-                        }
+                authViewModel = viewModel(
+                    factory = ViewModelFactory(context.applicationContext as android.app.Application)
+                ),
+                onNavigateToRegister = { navController.navigate("register") },
+                onLoginResult = { isSuccess ->
+                    if (isSuccess) {
+                        isLoggedIn = true
+                        navController.navigate("main") { popUpTo("login") { inclusive = true } }
                     }
+                }
             )
         }
 
@@ -57,11 +63,13 @@ fun AppNavigation() {
 
         composable("main") {
             MainScreen(
-                    authViewModel = AuthViewModel(),
-                    onLogout = {
-                        isLoggedIn = false
-                        navController.popBackStack("login", inclusive = false)
-                    }
+                authViewModel = viewModel(
+                    factory = ViewModelFactory(context.applicationContext as android.app.Application)
+                ),
+                onLogout = {
+                    isLoggedIn = false
+                    navController.popBackStack("login", inclusive = false)
+                }
             )
         }
 
@@ -73,7 +81,6 @@ fun AppNavigation() {
 
 @Composable
 fun MainScreen(
-    remoteViewModel: RemoteViewModel = viewModel(),
     authViewModel: AuthViewModel,
     onLogout: () -> Unit
 ) {
@@ -87,7 +94,7 @@ fun MainScreen(
         } else if (showSearchScreen) {
             showSearchScreen = false
         } else if (showUserScreen) {
-            showSearchScreen = false
+            showUserScreen = false
         }
     }
 
@@ -104,46 +111,49 @@ fun MainScreen(
             }
             else -> {
                 Column(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(125.dp))
 
                     Image(
-                            painter = painterResource(id = R.drawable.hospital_logo),
-                            contentDescription = "Hospital Logo",
-                            modifier = Modifier.size(250.dp)
+                        painter = painterResource(id = R.drawable.hospital_logo),
+                        contentDescription = "Hospital Logo",
+                        modifier = Modifier.size(250.dp)
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                            text = "Hospital Management",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                        text = "Hospital Management",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                            text = "Manage your hospital tasks with ease",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 32.dp)
+                        text = "Manage your hospital tasks with ease",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 32.dp)
                     )
 
-                    // Buttons for navigating to different screens
                     MainScreenButton(text = "Search Nurses", onClick = { showSearchScreen = true })
                     MainScreenButton(text = "List of Nurses", onClick = { showListScreen = true })
                     MainScreenButton(text = "Profile", onClick = { showUserScreen = true })
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Logout button
                     MainScreenButton(
-                            text = "Logout",
-                            onClick = onLogout,
-                            buttonColor = Color(0xFFB71C1C)
+                        text = "Logout",
+                        onClick = {
+                            // Method to clean the data.
+                            authViewModel.logout()
+
+                            onLogout()
+                        },
+                        buttonColor = Color(0xFFB71C1C)
                     )
                 }
             }
@@ -153,14 +163,16 @@ fun MainScreen(
 
 @Composable
 fun MainScreenButton(
-        text: String,
-        onClick: () -> Unit,
-        buttonColor: Color = MaterialTheme.colorScheme.primary
+    text: String,
+    onClick: () -> Unit,
+    buttonColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
-            onClick = onClick,
-            modifier = Modifier.width(350.dp).padding(vertical = 5.dp),
-            shape = RoundedCornerShape(13.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
+        onClick = onClick,
+        modifier = Modifier
+            .width(350.dp)
+            .padding(vertical = 5.dp),
+        shape = RoundedCornerShape(13.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
     ) { Text(text) }
 }

@@ -1,7 +1,9 @@
 package com.example.hospital.ui.profile
 
+import android.app.Application
+import android.content.Context
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hospital.data.api.Nurse
 import com.example.hospital.data.api.RetrofitInstance
@@ -10,7 +12,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+    // UI state flows
     private val _nurse = MutableStateFlow<Nurse?>(null)
     val nurse: StateFlow<Nurse?> = _nurse.asStateFlow()
 
@@ -21,21 +25,33 @@ class ProfileViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
+        // First method to execute.
         loadProfile()
     }
 
+    // Load nurse profile from API using stored ID
     private fun loadProfile() {
         startLoading()
         clearError()
 
-        // Example with nurseID 1
-        val nurseId = 1
+        // Get nurse ID from SharedPreferences
+        val nurseId = getApplication<Application>()
+            .getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+            .getInt("logged_nurse_id", -1)
+
+        if (nurseId == -1) {
+            setError("No logged nurse found")
+            stopLoading()
+            return
+        }
 
         viewModelScope.launch {
+            // Invoke method with logic to display the nurse profile.
             executeGetProfile(nurseId)
         }
     }
 
+    // Execute API call to get profile
     private suspend fun executeGetProfile(nurseId: Int) {
         try {
             val response = RetrofitInstance.api.getProfile(nurseId)
@@ -49,17 +65,16 @@ class ProfileViewModel : ViewModel() {
 
     private fun handleGetProfileResponse(response: retrofit2.Response<Nurse>) {
         if (response.isSuccessful) {
+            // Update the state with the profile data.
             _nurse.value = response.body()
-            Log.d("ProfileViewModel", "Profile loaded successfully: ${response.body()}")
         } else {
             setError("Error loading profile: ${response.code()}")
-            Log.e("ProfileViewModel", "Error loading profile: ${response.code()}")
         }
     }
 
+    // Update nurse profile
     fun updateProfile(updatedNurse: Nurse) {
-        val currentNurseId = _nurse.value?.id
-        if (currentNurseId == null) {
+        val currentNurseId = _nurse.value?.id ?: run {
             setError("No nurse ID available")
             return
         }
@@ -68,6 +83,7 @@ class ProfileViewModel : ViewModel() {
         clearError()
 
         viewModelScope.launch {
+            // Invoke method with logic to update the nurse profile.
             executeUpdateProfile(currentNurseId, updatedNurse)
         }
     }
@@ -85,17 +101,16 @@ class ProfileViewModel : ViewModel() {
 
     private fun handleUpdateProfileResponse(response: retrofit2.Response<Nurse>) {
         if (response.isSuccessful) {
+            // Update the state with the updated data.
             _nurse.value = response.body()
-            Log.d("ProfileViewModel", "Profile updated successfully: ${response.body()}")
         } else {
             setError("Error updating profile: ${response.code()}")
-            Log.e("ProfileViewModel", "Error updating profile: ${response.code()}")
         }
     }
 
+    // Delete nurse profile
     fun deleteProfile() {
-        val currentNurseId = _nurse.value?.id
-        if (currentNurseId == null) {
+        val currentNurseId = _nurse.value?.id ?: run {
             setError("No nurse ID available")
             return
         }
@@ -104,6 +119,7 @@ class ProfileViewModel : ViewModel() {
         clearError()
 
         viewModelScope.launch {
+            // Invoke method with logic to delete the nurse profile.
             executeDeleteProfile(currentNurseId)
         }
     }
@@ -122,13 +138,18 @@ class ProfileViewModel : ViewModel() {
     private fun handleDeleteProfileResponse(response: retrofit2.Response<String>) {
         if (response.isSuccessful) {
             _nurse.value = null
-            Log.d("ProfileViewModel", "Profile deleted successfully")
+            // Clear user data after successful deletion.
+            getApplication<Application>()
+                .getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .remove("logged_nurse_id")
+                .apply()
         } else {
             setError("Error deleting profile: ${response.code()}")
-            Log.e("ProfileViewModel", "Error deleting profile: ${response.code()}")
         }
     }
 
+    // Utility functions for state management
     private fun startLoading() {
         _isLoading.value = true
     }
