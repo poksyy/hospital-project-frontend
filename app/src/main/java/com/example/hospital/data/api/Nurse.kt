@@ -5,5 +5,5 @@ data class Nurse(
     val name: String = "",
     val user: String = "",
     val password: String = "",
-    val profileImage: String? = null
+    val profileImage: ByteArray? = null
 )

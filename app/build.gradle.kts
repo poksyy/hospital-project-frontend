@@ -73,6 +73,7 @@ dependencies {
     implementation (libs.converter.gson)
 
     // Navigation dependency
-    implementation(libs.navigation.compose.v277)
+    implementation(libs.androidx.navigation.compose)
+
 }
 
