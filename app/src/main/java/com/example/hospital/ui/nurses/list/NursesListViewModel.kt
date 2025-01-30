@@ -60,7 +60,7 @@ class NursesListViewModel : ViewModel() {
 
     suspend fun getNurseDirectory(): Result<List<Nurse>> {
         return try {
-            val response = RetrofitInstance.api.getNurseDirectory()
+            val response = RetrofitInstance.api.getAllNurses()
 
             if (response.isSuccessful) {
                 response.body()?.let { nurses ->
