@@ -75,7 +75,7 @@ class SearchNurseViewModel : ViewModel() {
     // Call the API to search for nurses by name
     private suspend fun searchNursesByName(name: String): Result<Nurse?> {
         return try {
-            val response = RetrofitInstance.api.searchNursesByName(name)
+            val response = RetrofitInstance.api.getNurseByName(name)
             if (response.isSuccessful) {
                 response.body()?.let { nurse ->
                     Result.success(nurse)
@@ -91,7 +91,7 @@ class SearchNurseViewModel : ViewModel() {
     // Call the API to get all nurses
     private suspend fun getAllNurses(): Result<List<Nurse>> {
         return try {
-            val response = RetrofitInstance.api.getNurseDirectory()
+            val response = RetrofitInstance.api.getAllNurses()
             if (response.isSuccessful) {
                 response.body()?.let { nurses ->
                     Result.success(nurses)

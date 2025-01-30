@@ -89,7 +89,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 val nurse = Nurse(user = user, password = password)
-                val response = RetrofitInstance.api.postRegistration(nurse)
+                val response = RetrofitInstance.api.register(nurse)
 
                 if (response.isSuccessful && response.body() != null) {
                     _registerResult.value = RegisterResult.Success(response.body()!!)

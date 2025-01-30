@@ -54,7 +54,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     // Execute API call to get profile
     private suspend fun executeGetProfile(nurseId: Int) {
         try {
-            val response = RetrofitInstance.api.getProfile(nurseId)
+            val response = RetrofitInstance.api.getNurseById(nurseId)
             handleGetProfileResponse(response)
         } catch (e: Exception) {
             handleError("Error loading profile", e)
