@@ -1,9 +1,7 @@
-package com.example.hospital.ui.nurses.search
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -15,19 +13,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hospital.R
 
 @Composable
-fun SearchScreen(
-    viewModel: SearchNurseViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-    onBackPressed: () -> Unit
+fun SearchNurseScreen(
+    // Navigates back to the HomeScreen.
+    onNavigateBack: () -> Unit,
+    // Allows data export from SearchNurseViewModel.
+    viewModel: SearchNurseViewModel = viewModel()
 ) {
+    // Collecting state from the ViewModel: nurses list, loading state, and errors.
     val searchText by viewModel.searchText.collectAsState()
     val filteredNurses by viewModel.filteredNurses.collectAsState()
     val errorMessage by viewModel.error.collectAsState()
-
-    // Fetch nurses when the screen is loaded
-    viewModel.searchNurses()
 
     Column(
         modifier = Modifier
@@ -36,14 +35,14 @@ fun SearchScreen(
     ) {
         Spacer(modifier = Modifier.height(64.dp))
 
-        // Header with Back Button, Title, and Logo
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            IconButton(onClick = { onBackPressed() }) {
+            // Navigates back to the HomeScreen.
+            IconButton(onClick = onNavigateBack) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier.size(24.dp)
                 )
@@ -59,7 +58,6 @@ fun SearchScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Hospital logo
             Image(
                 painter = painterResource(id = R.drawable.hospital_logo),
                 contentDescription = "Hospital Logo",
@@ -69,7 +67,6 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Search Bar and Information
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
@@ -79,23 +76,22 @@ fun SearchScreen(
                 fontSize = 25.sp
             )
 
-            // Search bar for nurses.
+            // Calls updateSearchText() on each text change to update the search bar.
             TextField(
                 value = searchText,
-                onValueChange = { newText -> viewModel.updateSearchText(newText) },
+                // Updates search text and triggers a new search.
+                onValueChange = { viewModel.updateSearchText(it) },
                 label = { Text("Search nurses:") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            // Information text for how many nurses have been found.
             Text(
                 text = "Showing ${filteredNurses.size} nurses",
                 modifier = Modifier.padding(top = 8.dp),
                 color = Color.Blue
             )
 
-            // Show the nurses list below the search bar.
             filteredNurses.forEach { nurse ->
                 Text(
                     text = nurse.name,
@@ -103,10 +99,9 @@ fun SearchScreen(
                 )
             }
 
-            // Show an error message if the nurse is not found
             errorMessage?.let {
                 Text(
-                    text = it,  // Error message text
+                    text = it,
                     color = Color.Red,
                     modifier = Modifier.padding(top = 16.dp)
                 )
