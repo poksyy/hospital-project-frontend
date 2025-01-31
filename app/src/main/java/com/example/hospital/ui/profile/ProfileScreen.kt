@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,44 +21,62 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.Icon
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.zIndex
 import com.example.hospital.R
 import com.example.hospital.ui.theme.PrimaryColor
 import com.example.hospital.ui.factory.ViewModelFactory
 
-// Main profile screen composable that handles user profile display and editing.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    modifier: Modifier = Modifier,
+    // Navigates back to the HomeScreen.
+    onNavigateBack: () -> Unit,
+    // LoginScreen redirection.
+    onLogout: () -> Unit,
+    // Gets ProfileViewModel with custom factory using the Application context.
     viewModel: ProfileViewModel = viewModel(
         factory = ViewModelFactory(LocalContext.current.applicationContext as android.app.Application)
-    ),
-    onBackPressed: () -> Unit
+    )
 ) {
-    // State management for profile data and UI.
+
     val nurse by viewModel.nurse.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
-
-    // Remember the name and username and defaulting and empty String if null.
+    var showUpdateDialog by remember { mutableStateOf(false) }
     var name by remember(nurse?.name) { mutableStateOf(nurse?.name ?: "") }
     var username by remember(nurse?.user) { mutableStateOf(nurse?.user ?: "") }
+    val updateSuccess by viewModel.updateSuccess.collectAsState()
 
-    // Delete confirmation dialog.
+    // Update success dialog
+    if (showUpdateDialog) {
+        AlertDialog(onDismissRequest = { showUpdateDialog = false },
+            title = { Text("Success") },
+            text = { Text("The profile information has been changed successfully") },
+            confirmButton = {
+                IconButton(onClick = { showUpdateDialog = false }) {
+                    Icon(
+                        imageVector = Icons.Default.Close, contentDescription = "Close"
+                    )
+                }
+            })
+    }
+
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            showUpdateDialog = true
+            viewModel.resetUpdateSuccess()
+        }
+    }
+
     if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+        AlertDialog(onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Account") },
             text = { Text("Are you sure you want to delete your account? This action cannot be undone.") },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.deleteProfile()
-
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        showDeleteDialog = false
+                        onLogout()
+                    }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Delete")
                 }
@@ -66,196 +85,169 @@ fun ProfileScreen(
                 Button(onClick = { showDeleteDialog = false }) {
                     Text("Cancel")
                 }
-            }
-        )
+            })
     }
 
-    // Background logo
     Box(modifier = Modifier.fillMaxSize()) {
+        // Background logo
         Image(
             painter = painterResource(id = R.drawable.hospital_logo),
             contentDescription = null,
             modifier = Modifier
                 .size(600.dp)
                 .align(Alignment.Center)
-                .alpha(0.1f),
-            contentScale = ContentScale.Crop
+                .alpha(0.1f)
         )
-    }
 
-    // Main content
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .zIndex(1f)
-    ) {
-        // Top navigation bar
-        TopAppBar(
-            title = { },
-            navigationIcon = {
-                IconButton(onClick = onBackPressed) {
+        // Main content
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopAppBar(title = { }, navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back"
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                navigationIconContentColor = Color.Black
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent, navigationIconContentColor = Color.Black
             )
-        )
+            )
 
-        // Profile content
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Profile picture
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.hospital_logo),
-                    contentDescription = "Hospital Logo",
-                    modifier = Modifier.size(60.dp),
-                    tint = Color.White
-                )
-            }
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // Editable name field
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Name") },
-                modifier = Modifier.width(280.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Black,
-                    focusedBorderColor = PrimaryColor
-                ),
-                trailingIcon = {
+                // Profile picture
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Name",
-                        tint = Color.Black
+                        painter = painterResource(id = R.drawable.hospital_logo),
+                        contentDescription = "Hospital Logo",
+                        modifier = Modifier.size(60.dp),
+                        tint = Color.White
                     )
                 }
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-            // Editable username field
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
-                label = { Text("Username") },
-                modifier = Modifier.width(280.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Black,
-                    focusedBorderColor = PrimaryColor
-                ),
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Username",
-                        tint = Color.Black
+                // Name field
+                OutlinedTextField(value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    modifier = Modifier.width(280.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.Black, focusedBorderColor = PrimaryColor
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Name",
+                            tint = Color.Black
+                        )
+                    })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Username field
+                OutlinedTextField(value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.width(280.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.Black, focusedBorderColor = PrimaryColor
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Username",
+                            tint = Color.Black
+                        )
+                    })
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Save changes button
+                Button(
+                    onClick = {
+                        nurse?.let {
+                            // We create a copy of the actual nurse with the new values.
+                            val updatedNurse = it.copy(
+                                name = name, user = username
+                            )
+                            viewModel.updateProfile(updatedNurse)
+                            showUpdateDialog = true
+                        }
+                    },
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("SAVE CHANGES", fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Change password button
+                Button(
+                    onClick = { /* TODO: Implement password change */ },
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("CHANGE PASSWORD", fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Delete account button
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "DELETE ACCOUNT", color = Color.Red, fontWeight = FontWeight.Bold
                     )
                 }
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Save changes button
-            Button(
-                onClick = {
-                    nurse?.let {
-                        viewModel.updateProfile(it.copy(name = name, user = username))
-                    }
-                },
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryColor
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "SAVE CHANGES",
-                    fontWeight = FontWeight.Bold
-                )
+                // Logout button
+                Button(
+                    onClick = onLogout,
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black.copy(alpha = 0.2f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "LOGOUT", color = Color.Black, fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Change password button
-            Button(
-                onClick = { /* TODO: Implement password change */ },
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryColor
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "CHANGE PASSWORD",
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Delete account button
-            Button(
-                onClick = { showDeleteDialog = true },
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Red.copy(alpha = 0.1f)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "DELETE ACCOUNT",
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Logout button
-            Button(
-                onClick = onBackPressed,
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black.copy(alpha = 0.2f)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "LOGOUT",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
