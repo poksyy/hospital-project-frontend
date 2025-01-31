@@ -41,8 +41,6 @@ fun ProfileScreen(
     val nurse by viewModel.nurse.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showUpdateDialog by remember { mutableStateOf(false) }
-    var name by remember(nurse?.name) { mutableStateOf(nurse?.name ?: "") }
-    var username by remember(nurse?.user) { mutableStateOf(nurse?.user ?: "") }
     val updateSuccess by viewModel.updateSuccess.collectAsState()
 
     // Update success dialog
@@ -64,6 +62,16 @@ fun ProfileScreen(
             showUpdateDialog = true
             viewModel.resetUpdateSuccess()
         }
+    }
+
+    // Monitor changes to `nurse` and update name and username dynamically.
+    var name by remember { mutableStateOf(nurse?.name ?: "") }
+    var username by remember { mutableStateOf(nurse?.user ?: "") }
+
+    // Update name and username whenever nurse changes.
+    LaunchedEffect(nurse) {
+        name = nurse?.name ?: ""
+        username = nurse?.user ?: ""
     }
 
     if (showDeleteDialog) {
