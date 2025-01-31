@@ -19,10 +19,10 @@ interface RemoteNurseApi {
     @GET("${BASE_PATH}nurses")
     suspend fun getAllNurses(): Response<List<Nurse>>
 
-    @GET("${BASE_PATH}nurses/{name}")
+    @GET("${BASE_PATH}nurses/{name}/name")
     suspend fun getNurseByName(@Path("name") name: String): Response<Nurse>
 
-    @GET("${BASE_PATH}profile/{id}")
+    @GET("${BASE_PATH}nurses/{id}")
     suspend fun getNurseById(@Path("id") id: Int): Response<Nurse>
 
     @PUT("${BASE_PATH}nurses/{id}")
