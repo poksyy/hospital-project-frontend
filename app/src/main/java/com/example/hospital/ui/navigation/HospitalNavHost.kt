@@ -1,6 +1,5 @@
 package com.example.hospital.ui.navigation
 
-import ProfileScreen
 import SearchNurseScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +12,7 @@ import com.example.hospital.ui.auth.LoginScreen
 import com.example.hospital.ui.auth.RegisterScreen
 import com.example.hospital.ui.home.HomeScreen
 import com.example.hospital.ui.nurses.list.ListNursesScreen
+import com.example.hospital.ui.profile.ProfileScreen
 
 @Composable
 fun HospitalNavHost(
