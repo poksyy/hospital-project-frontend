@@ -2,108 +2,113 @@ package com.example.hospital.ui.auth
 
 import android.app.Application
 import android.content.Context
-import androidx.lifecycle.AndroidViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hospital.data.api.Nurse
 import com.example.hospital.data.api.RetrofitInstance
+import com.example.hospital.ui.auth.AuthUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _loginResult = MutableStateFlow<LoginResult>(LoginResult.None)
-    val loginResult: StateFlow<LoginResult> = _loginResult
+    // StateFlow for login and register results, holding different states (success, failure, loading).
+    private val _loginResult =
+        MutableStateFlow<AuthUiState.LoginResult>(AuthUiState.LoginResult.None)
 
-    private val _registerResult = MutableStateFlow<RegisterResult>(RegisterResult.None)
-    val registerResult: StateFlow<RegisterResult> = _registerResult
+    val loginResult: StateFlow<AuthUiState.LoginResult> = _loginResult
 
+    val _registerResult =
+        MutableStateFlow<AuthUiState.RegisterResult>(AuthUiState.RegisterResult.None)
+
+    val registerResult: StateFlow<AuthUiState.RegisterResult> = _registerResult
+
+    // Holds the current values for username and password.
     var username by mutableStateOf("")
     var password by mutableStateOf("")
 
+    // Login function that checks for empty fields, makes a network request, and updates the state.
     fun login() {
         if (username.isBlank() || password.isBlank()) {
-            _loginResult.value = LoginResult.Failure("Username and password cannot be empty")
+            _loginResult.value =
+                AuthUiState.LoginResult.Failure("Username and password cannot be empty")
             return
         }
 
         val nurse = Nurse(user = username, password = password)
 
         viewModelScope.launch {
-            _loginResult.value = LoginResult.Loading
+            _loginResult.value = AuthUiState.LoginResult.Loading
             try {
                 val response = RetrofitInstance.api.login(nurse)
                 if (response.isSuccessful && response.body() != null) {
                     val loggedNurse = response.body()!!
-                    // Save the nurse ID in the SharedPreferences
+                    // If login is successful, store the nurse's ID in SharedPreferences for future use.
                     loggedNurse.id?.let { nurseId ->
-                        getApplication<Application>().getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+                        getApplication<Application>().getSharedPreferences(
+                            "nurse_prefs",
+                            Context.MODE_PRIVATE
+                        )
                             .edit()
                             .putInt("logged_nurse_id", nurseId)
                             .apply()
                     }
-                    _loginResult.value = LoginResult.Success(loggedNurse)
+                    _loginResult.value = AuthUiState.LoginResult.Success(loggedNurse)
                 } else {
-                    _loginResult.value = LoginResult.Failure("Login failed: ${response.message()}")
+                    _loginResult.value =
+                        AuthUiState.LoginResult.Failure("Login failed: ${response.message()}")
                 }
             } catch (e: Exception) {
-                _loginResult.value = LoginResult.Failure("Error: ${e.message}")
+                _loginResult.value = AuthUiState.LoginResult.Failure("Error: ${e.message}")
             }
         }
     }
 
-    fun logout() {
-        // Clean SharedPreferences when the user logout.
-        getApplication<Application>().getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
-            .edit()
-            .remove("logged_nurse_id")
-            .apply()
-
-        resetLoginState()
-    }
-
-    fun register(user: String, password: String, onSuccess: () -> Unit = {}) {
+    // Register function that validates input, checks if username is taken, and attempts registration.
+    fun register(user: String, password: String) {
         if (user.isBlank() || password.isBlank()) {
-            _registerResult.value = RegisterResult.Failure("Username and password cannot be empty")
+            _registerResult.value =
+                AuthUiState.RegisterResult.Failure("Username and password cannot be empty")
             return
         }
 
         val validationError = validateRegistrationInput(user, password)
         if (validationError != null) {
-            _registerResult.value = RegisterResult.Failure(validationError)
+            _registerResult.value = AuthUiState.RegisterResult.Failure(validationError)
             return
         }
 
         viewModelScope.launch {
-            _registerResult.value = RegisterResult.Loading
+            _registerResult.value = AuthUiState.RegisterResult.Loading
             try {
                 val userCheckResponse = RetrofitInstance.api.checkUserAvailability(user)
                 if (!userCheckResponse.isSuccessful || userCheckResponse.body() == false) {
-                    _registerResult.value = RegisterResult.Failure("Username is already taken")
+                    _registerResult.value =
+                        AuthUiState.RegisterResult.Failure("Username is already taken")
                     return@launch
                 }
 
                 val nurse = Nurse(user = user, password = password)
-                val response = RetrofitInstance.api.postRegistration(nurse)
+                val response = RetrofitInstance.api.register(nurse)
 
                 if (response.isSuccessful && response.body() != null) {
-                    _registerResult.value = RegisterResult.Success(response.body()!!)
-                    onSuccess()
+                    _registerResult.value = AuthUiState.RegisterResult.Success(response.body()!!)
+                    username = ""
                 } else {
                     _registerResult.value =
-                            RegisterResult.Failure("Registration failed: ${response.message()}")
+                        AuthUiState.RegisterResult.Failure("Registration failed: ${response.message()}")
                 }
             } catch (e: Exception) {
-                _registerResult.value = RegisterResult.Failure("Error: ${e.message}")
+                _registerResult.value = AuthUiState.RegisterResult.Failure("Error: ${e.message}")
             }
         }
     }
 
+    // Validates the registration input, including username and password requirements.
     private fun validateRegistrationInput(user: String, password: String): String? {
         if (user.isBlank()) {
             return "Username cannot be empty"
@@ -120,25 +125,26 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         return null
     }
 
-    fun resetLoginState() {
-        _loginResult.value = LoginResult.None
+    // Resets the login state to its initial value.
+    private fun resetLoginState() {
+        _loginResult.value = AuthUiState.LoginResult.None
+        username = ""
+        password = ""
     }
 
+    // Resets the registration state to its initial value.
     fun resetRegisterState() {
-        _registerResult.value = RegisterResult.None
+        _registerResult.value = AuthUiState.RegisterResult.None
+        username = ""
+        password = ""
     }
-}
 
-sealed class LoginResult {
-    data object None : LoginResult()
-    data object Loading : LoginResult()
-    data class Success(val nurse: Nurse) : LoginResult()
-    data class Failure(val error: String) : LoginResult()
-}
-
-sealed class RegisterResult {
-    object None : RegisterResult()
-    object Loading : RegisterResult()
-    data class Success(val nurse: Nurse) : RegisterResult()
-    data class Failure(val error: String) : RegisterResult()
+    // Logs out the user by removing their ID from SharedPreferences and resetting login state.
+    fun logout() {
+        getApplication<Application>().getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .remove("logged_nurse_id")
+            .apply()
+        resetLoginState()
+    }
 }

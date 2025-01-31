@@ -1,14 +1,9 @@
 package com.example.hospital.ui.auth
 
-import AuthViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.*
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,48 +12,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hospital.ui.home.RemoteViewModel
-import androidx.navigation.NavController
 import com.example.hospital.R
-import kotlinx.coroutines.launch
 
 @Composable
-fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = viewModel()) {
-    var user by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun RegisterScreen(
+    // Navigates back to the LoginScreen.
+    onNavigateBack: () -> Unit,
+    // HomeScreen redirection.
+    onRegisterSuccess: () -> Unit,
+    // Allows data export from AuthViewModel.
+    viewModel: AuthViewModel = viewModel()
+) {
     var confirmPassword by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Snackbar state
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    // Observes the registerResult state from the AuthViewModel and updates the UI reactively when it changes.
+    val registerResult by viewModel.registerResult.collectAsState()
 
-    val registerResult = viewModel.registerResult.collectAsState().value
-
-    // Handle registration result
+    // Effect to handle successful registration and navigate to home screen.
     LaunchedEffect(registerResult) {
         when (registerResult) {
-            is RegisterResult.Success -> {
-                scope.launch {
-                    val result =
-                        snackbarHostState.showSnackbar(
-                            message = "Successfully registered!",
-                            duration = SnackbarDuration.Short
-                        )
-                    if (result == SnackbarResult.Dismissed ||
-                        result == SnackbarResult.ActionPerformed
-                    ) {
-                        navController.navigate("login") { popUpTo("register") { inclusive = true } }
-                    }
-                }
+            is AuthUiState.RegisterResult.Success -> {
+                viewModel.resetRegisterState()
+                onRegisterSuccess()
             }
-
-            is RegisterResult.Failure -> {
-                errorMessage = registerResult.error
-            }
-
-            else -> Unit // Do nothing for other states
+            else -> {}
         }
+    }
+
+    // Effect to reset the register state when entering the screen.
+    // This is going to execute every time the user enters the RegisterScreen.
+    LaunchedEffect(Unit) {
+        viewModel.resetRegisterState()
     }
 
     Column(
@@ -93,71 +77,99 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = view
         )
 
         OutlinedTextField(
-            value = user,
-            onValueChange = { user = it },
-            label = { Text("User") },
-            modifier = Modifier.width(350.dp)
+            // Username value entered by the user.
+            value = viewModel.username,
+            // Handles username input change by updating the ViewModel.
+            onValueChange = { viewModel.username = it },
+            label = { Text("Username") },
+            modifier = Modifier.width(350.dp),
+            // Disables the field while registration is in progress.
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            // Password value entered by the user.
+            value = viewModel.password,
+            // Handles password input change by updating the ViewModel.
+            onValueChange = { viewModel.password = it },
             label = { Text("Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.width(350.dp)
+            modifier = Modifier.width(350.dp),
+            // Disables the field while registration is in progress.
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
+            // Confirm password value entered by the user.
             value = confirmPassword,
+            // Handles confirm password input change.
             onValueChange = { confirmPassword = it },
             label = { Text("Confirm Password") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.width(350.dp)
+            modifier = Modifier.width(350.dp),
+            // Disables the field while registration is in progress.
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        errorMessage?.let {
+        // Displays error message when registration fails.
+        if (registerResult is AuthUiState.RegisterResult.Failure) {
             Text(
-                text = it,
+                text = (registerResult as AuthUiState.RegisterResult.Failure).error,
                 color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(vertical = 8.dp)
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
 
         Button(
+            // Trigger registration action, checks if passwords match.
             onClick = {
-                scope.launch {
-                    if (password != confirmPassword) {
-                        errorMessage = "Passwords don't match"
-                        return@launch
-                    }
-
-                    viewModel.username = user
-                    viewModel.password = password
-
-                    viewModel.register(user, password)
+                if (viewModel.password != confirmPassword) {
+                    viewModel._registerResult.value =
+                        AuthUiState.RegisterResult.Failure("Passwords do not match")
                 }
+                viewModel.register(viewModel.username, viewModel.password)
             },
             modifier = Modifier
                 .width(350.dp)
                 .padding(vertical = 5.dp),
-            colors =
-            ButtonDefaults.buttonColors(
+            colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
-            )
-        ) { Text("Register") }
+            ),
+            // Disables the button while registration is in progress.
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
+        ) {
+            // Shows loading indicator while registration is in progress.
+            if (registerResult is AuthUiState.RegisterResult.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Register")
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { navController.popBackStack() }) {
+        TextButton(
+            onClick = {
+                // We make sure that the register form is reset.
+                viewModel.resetRegisterState()
+                // Navigates back to the LoginScreen.
+                onNavigateBack()
+            },
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
+        ) {
             Text(
                 text = "Back to Login",
                 style = MaterialTheme.typography.bodyMedium,
@@ -165,12 +177,4 @@ fun RegisterScreen(navController: NavController, viewModel: AuthViewModel = view
             )
         }
     }
-
-    // Display the snackbar at the bottom of the screen
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.BottomCenter
-    ) { SnackbarHost(hostState = snackbarHostState) }
 }
