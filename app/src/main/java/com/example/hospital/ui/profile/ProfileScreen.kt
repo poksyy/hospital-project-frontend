@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,34 +36,11 @@ fun ProfileScreen(
         factory = ViewModelFactory(LocalContext.current.applicationContext as android.app.Application)
     )
 ) {
-
     val nurse by viewModel.nurse.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showUpdateDialog by remember { mutableStateOf(false) }
-    val updateSuccess by viewModel.updateSuccess.collectAsState()
+    val updateMessage by viewModel.updateMessage.collectAsState()
 
-    // Update success dialog
-    if (showUpdateDialog) {
-        AlertDialog(onDismissRequest = { showUpdateDialog = false },
-            title = { Text("Success") },
-            text = { Text("The profile information has been changed successfully") },
-            confirmButton = {
-                IconButton(onClick = { showUpdateDialog = false }) {
-                    Icon(
-                        imageVector = Icons.Default.Close, contentDescription = "Close"
-                    )
-                }
-            })
-    }
-
-    LaunchedEffect(updateSuccess) {
-        if (updateSuccess) {
-            showUpdateDialog = true
-            viewModel.resetUpdateSuccess()
-        }
-    }
-
-    // Monitor changes to `nurse` and update name and username dynamically.
+    // Monitor changes to nurse and update name and username dynamically.
     var name by remember { mutableStateOf(nurse?.name ?: "") }
     var username by remember { mutableStateOf(nurse?.user ?: "") }
 
@@ -187,12 +163,18 @@ fun ProfileScreen(
                 Button(
                     onClick = {
                         nurse?.let {
-                            // We create a copy of the actual nurse with the new values.
-                            val updatedNurse = it.copy(
-                                name = name, user = username
-                            )
-                            viewModel.updateProfile(updatedNurse)
-                            showUpdateDialog = true
+                            // Check if the values have actually changed
+                            if (name != it.name || username != it.user) {
+                                // We create a copy of the actual nurse with the new values.
+                                val updatedNurse = it.copy(
+                                    name = name,
+                                    user = username
+                                )
+                                viewModel.updateProfile(updatedNurse)
+                            } else {
+                                // We set the boolean at true for the red color message.
+                                viewModel.setUpdateMessage("No changes detected", true)
+                            }
                         }
                     },
                     modifier = Modifier
@@ -202,6 +184,16 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("SAVE CHANGES", fontWeight = FontWeight.Bold)
+                }
+
+                // Update message
+                updateMessage?.let { message ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = message.message,
+                        color = if (message.isError) Color.Red else Color.Green,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -232,7 +224,9 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "DELETE ACCOUNT", color = Color.Red, fontWeight = FontWeight.Bold
+                        text = "DELETE ACCOUNT",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
@@ -250,7 +244,9 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "LOGOUT", color = Color.Black, fontWeight = FontWeight.Bold
+                        text = "LOGOUT",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
