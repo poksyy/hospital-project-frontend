@@ -10,12 +10,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hospital.R
 import com.example.hospital.ui.theme.PrimaryColor
 import com.example.hospital.ui.factory.ViewModelFactory
+import com.example.hospital.ui.utils.rememberBitmapFromByteArray
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,9 +42,11 @@ fun ProfileScreen(
 ) {
 
     val nurse by viewModel.nurse.collectAsState()
+    val profileImage by viewModel.profileImage.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showUpdateDialog by remember { mutableStateOf(false) }
     val updateSuccess by viewModel.updateSuccess.collectAsState()
+    val bitmap = rememberBitmapFromByteArray(profileImage)
 
     // Update success dialog
     if (showUpdateDialog) {
@@ -137,12 +142,20 @@ fun ProfileScreen(
                         .background(Color.Black),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.hospital_logo),
-                        contentDescription = "Hospital Logo",
-                        modifier = Modifier.size(60.dp),
-                        tint = Color.White
-                    )
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Profile Image",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Default Profile",
+                            modifier = Modifier.size(60.dp),
+                            tint = Color.White
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))

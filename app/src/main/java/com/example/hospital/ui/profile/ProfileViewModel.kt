@@ -7,16 +7,24 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hospital.data.api.Nurse
 import com.example.hospital.data.api.RetrofitInstance
+import com.example.hospital.image.ImageViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val imageViewModel = ImageViewModel()
 
     // UI state flows
     private val _nurse = MutableStateFlow<Nurse?>(null)
     val nurse: StateFlow<Nurse?> = _nurse.asStateFlow()
+
+    private val _profileImage = MutableStateFlow<ByteArray?>(null)
+    val profileImage: StateFlow<ByteArray?> = _profileImage.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -48,6 +56,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 val response = RetrofitInstance.api.getNurseById(nurseId)
                 if (response.isSuccessful) {
                     _nurse.value = response.body()
+                    // Fetch profile image
+                    loadProfileImage(nurseId)
                 } else {
                     _error.value = "Error loading profile: ${response.code()}"
                 }
@@ -60,8 +70,21 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun updateProfile(updatedNurse: Nurse) {
+    private suspend fun loadProfileImage(nurseId: Int) {
+        try {
+            val imageResult = withContext(Dispatchers.IO) {
+                imageViewModel.getNurseImage(nurseId)
+            }
+            imageResult.fold(
+                onSuccess = { imageBytes -> _profileImage.value = imageBytes },
+                onFailure = { Log.e("ProfileViewModel", "Error loading profile image", it) }
+            )
+        } catch (e: Exception) {
+            Log.e("ProfileViewModel", "Error loading profile image", e)
+        }
+    }
 
+    fun updateProfile(updatedNurse: Nurse) {
         _updateSuccess.value = false
         // Check if the ID is null.
         val nurseId = _nurse.value?.id ?: return
