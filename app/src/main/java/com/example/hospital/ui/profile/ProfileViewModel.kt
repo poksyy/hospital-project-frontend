@@ -18,6 +18,9 @@ import retrofit2.HttpException
 import java.io.IOException
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val imageViewModel = ImageViewModel()
+
     // UI state flows
     private val _nurse = MutableStateFlow<Nurse?>(null)
     val nurse: StateFlow<Nurse?> = _nurse.asStateFlow()

@@ -46,8 +46,6 @@ fun ProfileScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     val updateMessage by viewModel.updateMessage.collectAsState()
-    var showUpdateDialog by remember { mutableStateOf(false) }
-    val updateSuccess by viewModel.updateSuccess.collectAsState()
     val bitmap = rememberBitmapFromByteArray(profileImage)
     
     // Monitor changes to nurse and update name and username dynamically.
@@ -58,27 +56,6 @@ fun ProfileScreen(
     LaunchedEffect(nurse) {
         name = nurse?.name ?: ""
         username = nurse?.user ?: ""
-    }
-    
-    LaunchedEffect(updateSuccess) {
-        if (updateSuccess) {
-            showUpdateDialog = true
-            viewModel.resetUpdateSuccess()
-        }
-    }
-
-    // Update success dialog
-    if (showUpdateDialog) {
-        AlertDialog(onDismissRequest = { showUpdateDialog = false },
-            title = { Text("Success") },
-            text = { Text("The profile information has been changed successfully") },
-            confirmButton = {
-                IconButton(onClick = { showUpdateDialog = false }) {
-                    Icon(
-                        imageVector = Icons.Default.Close, contentDescription = "Close"
-                    )
-                }
-            })
     }
 
     if (showDeleteDialog) {
