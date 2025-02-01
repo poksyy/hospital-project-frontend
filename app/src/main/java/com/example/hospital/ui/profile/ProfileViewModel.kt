@@ -21,6 +21,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -32,14 +33,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         val isError: Boolean
     )
 
-    // Initialize the profile loading process.
     init {
         loadProfile()
     }
 
     private fun loadProfile() {
         val nurseId = getApplication<Application>()
-            // Retrieve the nurse ID from SharedPreferences, which was saved during login.
             .getSharedPreferences("nurse_prefs", Context.MODE_PRIVATE)
             .getInt("logged_nurse_id", -1)
 
@@ -68,7 +67,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun updateProfile(updatedNurse: Nurse) {
         clearUpdateMessage()
-        // Check if the ID is null.
         val nurseId = _nurse.value?.id ?: return
 
         viewModelScope.launch {
@@ -87,15 +85,44 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     else -> setUpdateMessage("Error updating profile: ${e.code()}", true)
                 }
                 Log.e("ProfileViewModel", "HTTP error: ${e.code()}", e)
-
             } catch (e: IOException) {
                 setUpdateMessage("Network error: Check your connection", true)
                 Log.e("ProfileViewModel", "IO error", e)
-
             } catch (e: Exception) {
                 setUpdateMessage("Unexpected error: ${e.message}", true)
                 Log.e("ProfileViewModel", "Unexpected error", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
+    fun updatePassword(newPassword: String) {
+        clearUpdateMessage()
+        val nurseId = _nurse.value?.id ?: return
+        val currentNurse = _nurse.value?.copy(password = newPassword) ?: return
+
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val response = RetrofitInstance.api.updateNursePassword(nurseId, currentNurse)
+                if (response.isSuccessful) {
+                    setUpdateMessage("Password updated successfully", false)
+                } else {
+                    throw HttpException(response)
+                }
+            } catch (e: HttpException) {
+                when (e.code()) {
+                    400 -> setUpdateMessage("Invalid password format", true)
+                    else -> setUpdateMessage("Error updating password: ${e.code()}", true)
+                }
+                Log.e("ProfileViewModel", "HTTP error updating password: ${e.code()}", e)
+            } catch (e: IOException) {
+                setUpdateMessage("Network error: Check your connection", true)
+                Log.e("ProfileViewModel", "IO error updating password", e)
+            } catch (e: Exception) {
+                setUpdateMessage("Unexpected error: ${e.message}", true)
+                Log.e("ProfileViewModel", "Unexpected error updating password", e)
             } finally {
                 _isLoading.value = false
             }
@@ -111,11 +138,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun clearUpdateMessage() {
+    private fun clearUpdateMessage() {
         _updateMessage.value = null
     }
 
-    // Delete the nurse profile and clear SharedPreferences.
     fun deleteProfile() {
         val nurseId = _nurse.value?.id ?: return
 
