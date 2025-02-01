@@ -31,6 +31,9 @@ interface RemoteNurseApi {
     @PUT("${BASE_PATH}nurses/{id}/profile")
     suspend fun updateNurseProfile(@Path("id") id: Int, @Body nurse: Nurse): Response<Nurse>
 
+    @PUT("${BASE_PATH}nurses/{id}/password")
+    suspend fun updateNursePassword(@Path("id") id: Int, @Body nurse: Nurse): Response<Nurse>
+
     @DELETE("${BASE_PATH}nurses/{id}")
     suspend fun deleteNurse(@Path("id") id: Int): Response<String>
 
