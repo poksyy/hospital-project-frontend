@@ -9,7 +9,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hospital.data.api.Nurse
 import com.example.hospital.data.api.RetrofitInstance
-import com.example.hospital.ui.auth.AuthUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -30,6 +29,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     // Holds the current values for username and password.
     var username by mutableStateOf("")
     var password by mutableStateOf("")
+    var name by mutableStateOf("")
 
     // Login function that checks for empty fields, makes a network request, and updates the state.
     fun login() {
@@ -69,10 +69,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Register function that validates input, checks if username is taken, and attempts registration.
-    fun register(user: String, password: String) {
-        if (user.isBlank() || password.isBlank()) {
-            _registerResult.value =
-                AuthUiState.RegisterResult.Failure("Username and password cannot be empty")
+    fun register(user: String, password: String, name: String) {
+
+        if (user.isBlank() || password.isBlank() || name.isBlank()) {
+            _registerResult.value = AuthUiState.RegisterResult.Failure("Username, password and name cannot be empty")
             return
         }
 
@@ -86,21 +86,38 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             _registerResult.value = AuthUiState.RegisterResult.Loading
             try {
                 val userCheckResponse = RetrofitInstance.api.checkUserAvailability(user)
-                if (!userCheckResponse.isSuccessful || userCheckResponse.body() == false) {
-                    _registerResult.value =
-                        AuthUiState.RegisterResult.Failure("Username is already taken")
+
+                if (!userCheckResponse.isSuccessful || userCheckResponse.body() == null) {
+                    _registerResult.value = AuthUiState.RegisterResult.Failure(
+                        "Error checking username availability: ${userCheckResponse.message()}"
+                    )
                     return@launch
                 }
 
-                val nurse = Nurse(user = user, password = password)
+                userCheckResponse.body()?.let { isAvailable ->
+                    if (!isAvailable) {
+                        _registerResult.value = AuthUiState.RegisterResult.Failure("Username is already taken")
+                        return@launch
+                    }
+                } ?: run {
+                    _registerResult.value = AuthUiState.RegisterResult.Failure("Invalid response from server")
+                    return@launch
+                }
+
+                val nurse = Nurse(user = user, password = password, name = name)
+
                 val response = RetrofitInstance.api.register(nurse)
 
                 if (response.isSuccessful && response.body() != null) {
                     _registerResult.value = AuthUiState.RegisterResult.Success(response.body()!!)
                     username = ""
+                    this@AuthViewModel.password = ""
+                    this@AuthViewModel.name = ""
+
+                    kotlinx.coroutines.delay(2000)
+                    resetRegisterState()
                 } else {
-                    _registerResult.value =
-                        AuthUiState.RegisterResult.Failure("Registration failed: ${response.message()}")
+                    _registerResult.value = AuthUiState.RegisterResult.Failure("Registration failed: ${response.message()}")
                 }
             } catch (e: Exception) {
                 _registerResult.value = AuthUiState.RegisterResult.Failure("Error: ${e.message}")
@@ -130,6 +147,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _loginResult.value = AuthUiState.LoginResult.None
         username = ""
         password = ""
+        name= ""
     }
 
     // Resets the registration state to its initial value.
@@ -137,6 +155,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _registerResult.value = AuthUiState.RegisterResult.None
         username = ""
         password = ""
+        name= ""
     }
 
     // Logs out the user by removing their ID from SharedPreferences and resetting login state.
