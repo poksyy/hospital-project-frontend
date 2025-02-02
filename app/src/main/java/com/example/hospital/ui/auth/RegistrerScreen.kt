@@ -76,6 +76,7 @@ fun RegisterScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        // Username input
         OutlinedTextField(
             // Username value entered by the user.
             value = viewModel.username,
@@ -89,6 +90,21 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // New field for Name input (added here)
+        OutlinedTextField(
+            // Name value entered by the user.
+            value = viewModel.name,
+            // Handles name input change by updating the ViewModel.
+            onValueChange = { viewModel.name = it },
+            label = { Text("Name") },
+            modifier = Modifier.width(350.dp),
+            // Disables the field while registration is in progress.
+            enabled = registerResult !is AuthUiState.RegisterResult.Loading
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Password input
         OutlinedTextField(
             // Password value entered by the user.
             value = viewModel.password,
@@ -104,6 +120,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Confirm password input
         OutlinedTextField(
             // Confirm password value entered by the user.
             value = confirmPassword,
@@ -136,7 +153,8 @@ fun RegisterScreen(
                     viewModel._registerResult.value =
                         AuthUiState.RegisterResult.Failure("Passwords do not match")
                 }
-                viewModel.register(viewModel.username, viewModel.password)
+                // Pass name along with username and password to register
+                viewModel.register(viewModel.username, viewModel.password, viewModel.name)
             },
             modifier = Modifier
                 .width(350.dp)
